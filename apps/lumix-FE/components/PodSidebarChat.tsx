@@ -1,9 +1,14 @@
 import { AvatarFallback } from "@radix-ui/react-avatar"
 import { Avatar, AvatarImage } from "./ui/avatar"
 import { ScrollArea } from "./ui/scroll-area"
+import { Input } from "./ui/input"
+import { useState } from "react"
+import { Button } from "./ui/button"
+import { Send } from "lucide-react"
 
 export const PodSidebarChat = () => {
-    const chatMessages = [
+    const [input, setInput] = useState("");
+    const [chatMessages, setChatMessages] = useState([
         {
             id: 1,
             user: "Karthik Balasubramanian",
@@ -87,11 +92,11 @@ export const PodSidebarChat = () => {
             message: "Yes, let's schedule that for next sprint. I'll add it now.",
             time: "2:36 PM",
             avatar: "/professional-person.png",
-        },
-    ]
+        }
+    ])
 
-    return <div className="flex flex-col h-full overflow-auto scrollbar-custom-thin">
-        <ScrollArea className="flex-1 p-4">
+    return <div className="flex flex-col h-full">
+        <ScrollArea className="flex-1 p-4 overflow-auto scrollbar-custom-thin">
             <div className="space-y-4">
                 {chatMessages.map(msg => (
                     <div key={msg.id} className="flex space-x-3">
@@ -112,5 +117,21 @@ export const PodSidebarChat = () => {
                 ))}
             </div>
         </ScrollArea>
+        <div className="mt-1 p-2 border-t border-border">
+                <div className="flex space-x-2">
+                    <Input
+                    className="flex-1"
+                    placeholder="Type a message..."
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    />
+                    <Button
+                    size="sm"
+                    className="bg-blue-500 dark:bg-blue-500 cursor-pointer hover:bg-green-400/50 dark:hover:bg-green-400/80"
+                    >
+                        <Send className="w-4 h-4"/>
+                    </Button>
+                </div>
+        </div>
     </div>
 }

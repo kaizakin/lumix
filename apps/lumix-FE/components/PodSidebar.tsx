@@ -6,6 +6,7 @@ import { Separator } from "./ui/separator";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { PodSidebarSchedule } from "./PodSidebarSchedule";
+import { PodSidebarFiles } from "./PodSidebarFiles";
 
 interface PodSideBarProps {
     isOpen: boolean;
@@ -62,6 +63,10 @@ export const PodSideBar = ({ isOpen, onToggle }: PodSideBarProps) => {
                             {
                                 activeTab == "schedule" &&
                                 <PodSidebarSchedule/>
+                            }
+                            {
+                                activeTab == "files" &&
+                                <PodSidebarFiles/>
                             }
                         </div>
                     </div>
