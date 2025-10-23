@@ -5,7 +5,7 @@ import { Card } from "./ui/card"
 import { useState } from "react"
 
 export const PodSidebarFiles = () => {
-    const [isHovered, setIsHovered] = useState<String | null>(null);
+    const [isHovered, setIsHovered] = useState<string | null>(null);
     const [sharedFiles, setSharedFiles] = useState([
         {
             id: "1",
