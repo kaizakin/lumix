@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Mic, MicOff, Settings, Share2, Video, VideoOff } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { PodDescription } from "@/components/PodDescription";
-import { PodCanvas } from "@/components/PodCanvas";
+import { PodCanvas } from "@/components/canvas/PodCanvas";
 import { PodSideBar } from "@/components/podsidebar/PodSidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 

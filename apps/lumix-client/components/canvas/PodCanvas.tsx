@@ -1,11 +1,11 @@
 "use client"
 
 import { Maximize2, Minimize2, PresentationIcon, TvMinimalPlayIcon } from "lucide-react"
-import { Switch } from "./ui/switch"
-import { Button } from "./ui/button"
+import { Switch } from "../ui/switch"
+import { Button } from "../ui/button"
 import { useState } from "react"
 import { PodCreateCanvasmsg } from "./PodCreateCanvasmsg"
-import { CanvasBoard } from "./CanvasBoard"
+import { CanvasWrapper } from "./CanvasWrapper"
 
 export const PodCanvas = ()=>{
     const [isCanvasFullscreen, setIsCanvasFullscreen] = useState(false);
@@ -23,7 +23,7 @@ export const PodCanvas = ()=>{
                 </Button>
             </div> 
             {
-                isCanvasCreated ? <PodCreateCanvasmsg createCanvas={setIsCanvasCreated}/> : <CanvasBoard/>
+                isCanvasCreated ? <CanvasWrapper/> : <PodCreateCanvasmsg createCanvas={setIsCanvasCreated}/>
             }
         </div>
     </div>

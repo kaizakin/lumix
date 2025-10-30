@@ -1,5 +1,5 @@
 import { Palette, Plus } from "lucide-react"
-import { Button } from "./ui/button"
+import { Button } from "../ui/button"
 
 export const PodCreateCanvasmsg = ({ createCanvas }: { createCanvas: (bool: boolean) => void }) => {
     return <div className="bg-gradient-to-br from-background to-muted/60 flex h-full justify-center items-center w-full">
