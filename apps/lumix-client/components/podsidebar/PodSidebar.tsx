@@ -25,13 +25,13 @@ export const PodSideBar = ({ isOpen, onToggle }: PodSideBarProps) => {
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    className={`flex flex-1 gap-1 items-center justify-center p-2 ${activeTab == "chat" ? "bg-blue-400" : ""} rounded-md hover:bg-green-400/50 dark:hover:bg-green-400/50 cursor-pointer`}
+                                    className={`flex flex-1 gap-1 items-center justify-center p-2 ${activeTab == "chat" ? "bg-blue-400" : ""} rounded-md hover:bg-green-400/50 cursor-pointer`}
                                     onClick={() => setActiveTab("chat")}>
                                     <MessageSquare className="h-5 w-5" />
                                     <span>Chat</span>
                                 </Button>
                                 <Button
-                                    className={`flex flex-1 gap-1 items-center justify-center p-2 rounded-md ${activeTab == "schedule" ? "bg-blue-400" : ""} hover:bg-green-400/50 dark:hover:bg-green-400/50 cursor-pointer`}
+                                    className={`flex flex-1 gap-1 items-center justify-center p-2 rounded-md ${activeTab == "schedule" ? "bg-blue-400" : ""} hover:bg-green-400/50 cursor-pointer`}
                                     size="sm"
                                     variant="ghost"
                                     onClick={() => setActiveTab("schedule")}>
@@ -39,7 +39,7 @@ export const PodSideBar = ({ isOpen, onToggle }: PodSideBarProps) => {
                                     <span>Schedule</span>
                                 </Button>
                                 <Button
-                                    className={`flex flex-1 gap-1 items-center justify-center p-2 rounded-md ${activeTab == "files" ? "bg-blue-400" : ""} hover:bg-green-400/50 dark:hover:bg-green-400/50 cursor-pointer`}
+                                    className={`flex flex-1 gap-1 items-center justify-center p-2 rounded-md ${activeTab == "files" ? "bg-blue-400" : ""} hover:bg-green-400/50 cursor-pointer`}
                                     size="sm"
                                     variant="ghost"
                                     onClick={() => setActiveTab("files")}>
@@ -49,7 +49,7 @@ export const PodSideBar = ({ isOpen, onToggle }: PodSideBarProps) => {
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="flex flex-1 items-center justify-center rounded-md hover:bg-red-500/80 dark:hover:bg-red-500/80 p-1 cursor-pointer"
+                                    className="flex flex-1 items-center justify-center rounded-md hover:bg-red-500/80 p-1 cursor-pointer"
                                     onClick={onToggle}>
                                     <X />
                                 </Button>

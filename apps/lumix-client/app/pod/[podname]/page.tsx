@@ -5,7 +5,6 @@ import { useParams } from 'next/navigation';
 import { PodBreadCrumb } from "@/components/PodBreadCrumb";
 import { Button } from "@/components/ui/button";
 import { Mic, MicOff, Settings, Share2, Video, VideoOff } from "lucide-react";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { PodDescription } from "@/components/PodDescription";
 import { PodCanvas } from "@/components/canvas/PodCanvas";
 import { PodSideBar } from "@/components/podsidebar/PodSidebar";
@@ -23,12 +22,11 @@ const PodPage = () => {
             <div className="flex items-center justify-between px-6 py-2">
                 <PodBreadCrumb podName={podname} />
                 <div className="flex items-center space-x-3">
-                    <ThemeToggle />
-                    <Button variant="outline" size="sm" className="hover:bg-green-400/50 dark:hover:bg-green-400/50 hover:text-white cursor-pointer">
+                    <Button variant="outline" size="sm" className="hover:bg-green-400/50 hover:text-white cursor-pointer">
                         <Share2 className="h-4 w-4 mr-2" />
                         Share
                     </Button>
-                    <Button variant="outline" size="sm" className="hover:bg-green-400/50 dark:hover:bg-green-400/50 hover:text-white cursor-pointer">
+                    <Button variant="outline" size="sm" className="hover:bg-green-400/50 hover:text-white cursor-pointer">
                         <Settings className="h-4 w-4" />
                     </Button>
                 </div>

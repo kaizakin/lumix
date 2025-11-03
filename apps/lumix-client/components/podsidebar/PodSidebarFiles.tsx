@@ -74,7 +74,7 @@ export const PodSidebarFiles = () => {
                 Shared files
             </h1>
             <Button
-                className="space-x-2 flex items-center cursor-pointer hover:bg-green-400/50 dark:hover:bg-green-400/50"
+                className="space-x-2 flex items-center cursor-pointer hover:bg-green-400/50"
                 variant="outline"
             >
                 <Upload />
@@ -84,7 +84,7 @@ export const PodSidebarFiles = () => {
         <ScrollArea className="scrollbar-custom-thin h-full overflow-auto flex-1 mt-3">
             <div className="p-1">
                 {sharedFiles.map(file => (
-                    <Card key={file.id} className={`relative my-4 p-3 justify-between mx-2 ${isHovered == file.id ? "bg-gradient-to-l from-blue-100 dark:from-blue-400 to-transparent dark:to-transparent":""}`}>
+                    <Card key={file.id} className={`relative my-4 p-3 justify-between mx-2 ${isHovered == file.id ? "bg-gradient-to-l from-blue-400 to-transparent":""}`}>
                         <div className="flex space-x-2">
                             <div className="rounded flex items-center justify-center bg-blue-400/60 p-2">
                                 <FileText className="text-primary w-4 h-4" />
@@ -97,7 +97,7 @@ export const PodSidebarFiles = () => {
                             </div>
                             <Button 
                             variant="ghost" 
-                            className="right-1 absolute cursor-pointer hover:bg-transparent dark:hover:bg-transparent opacity-0 hover:opacity-100 transition-all ease-in-out duration-200" 
+                            className="right-1 absolute cursor-pointer hover:bg-transparent opacity-0 hover:opacity-100 transition-all ease-in-out duration-200" 
                             size="sm"
                             onMouseEnter={()=>setIsHovered(file.id)}
                             onMouseLeave={()=>setIsHovered(null)}

@@ -127,7 +127,7 @@ export const PodSidebarChat = () => {
                     />
                     <Button
                     size="sm"
-                    className="bg-blue-500 dark:bg-blue-500 cursor-pointer hover:bg-green-400/50 dark:hover:bg-green-400/80"
+                    className="bg-blue-500 cursor-pointer hover:bg-green-400/80"
                     >
                         <Send className="w-4 h-4"/>
                     </Button>

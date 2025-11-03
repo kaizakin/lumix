@@ -18,7 +18,7 @@ export const PodCanvas = ()=>{
                     <Switch/>
                     <span className="flex items-center gap-1.5"><div className="bg-blue-500 p-1.5 rounded-md"><TvMinimalPlayIcon className="h-4 w-4"/></div>Observe</span>
                 </div>
-                <Button variant="ghost" size="sm" className="border border-border hover:bg-green-400/50 dark:hover:bg-green-400/50 cursor-pointer" onClick={() => setIsCanvasFullscreen(!isCanvasFullscreen)}>
+                <Button variant="ghost" size="sm" className="border border-border hover:bg-green-400/50 cursor-pointer" onClick={() => setIsCanvasFullscreen(!isCanvasFullscreen)}>
                   {isCanvasFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
                 </Button>
             </div> 

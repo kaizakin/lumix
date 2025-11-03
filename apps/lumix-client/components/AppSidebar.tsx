@@ -1,8 +1,7 @@
 "use client";
 
-import { BookOpen, ChevronDown, Home, Moon, Podcast } from "lucide-react"
+import { BookOpen, ChevronDown, Home, Podcast } from "lucide-react"
 import logo from "@/public/Logo_lumix.png"
-import darklogo from '@/public/lumix_logo_dark.png'
 import Image from "next/image"
 import { asimovian } from "@/style/font"
 import {
@@ -23,12 +22,10 @@ import {
 import { useSidebar } from "@/components/ui/sidebar"
 import { SidebarProfile } from "./ProfileButton";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
-import { Button } from "./ui/button";
 import { useState } from "react";
 import type { JSX } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { JoinDiscordButton } from "./JoinDiscord";
-import { useTheme } from "next-themes";
 
 
 const items = [
@@ -42,13 +39,12 @@ const items = [
 export function AppSidebar() :JSX.Element {
     const { state } = useSidebar();
     const [open, setOpen] = useState(false);
-    const { theme, setTheme } = useTheme();
     return (
         <>
             <Sidebar variant="floating" collapsible="icon" className="outline-none">
                 <SidebarHeader>
                     <div className="flex gap-3">
-                        <Image className="h-7 w-7" src={theme === "dark" ? logo : darklogo} alt="Lumix" />
+                        <Image className="h-7 w-7" src={logo} alt="Lumix" />
                         {state === "expanded" && <span className={`${asimovian.className} font-bold text-xl`}>Lumix</span>}
                     </div>
                 </SidebarHeader>
@@ -128,22 +124,6 @@ export function AppSidebar() :JSX.Element {
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
-                <SidebarFooter>
-                    <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton asChild>
-                                <div className="flex justify-between cursor-pointer" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-                                    {state === "expanded"
-                                        &&
-                                        <Button variant="ghost" >
-                                            Theme
-                                        </Button>}
-                                    <Moon />
-                                </div>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarFooter>
                 <SidebarFooter>
                     <SidebarProfile />
                 </SidebarFooter>

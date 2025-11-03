@@ -125,7 +125,7 @@ export const PodSidebarSchedule = () => {
                 </Card>
             ))}
         </ScrollArea>
-        <Button variant="outline" className="flex mt-3 hover:bg-green-500/50 dark:hover:bg-green-500/50 cursor-pointer">
+        <Button variant="outline" className="flex mt-3 hover:bg-green-500/50 cursor-pointer">
             <Plus />
             Add event
         </Button>

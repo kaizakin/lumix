@@ -4,7 +4,7 @@ import { Button } from "../ui/button"
 export const PodCreateCanvasmsg = ({ createCanvas }: { createCanvas: (bool: boolean) => void }) => {
     return <div className="bg-gradient-to-br from-background to-muted/60 flex h-full justify-center items-center w-full">
         <div className="text-center flex flex-col justify-center items-center space-y-4 p-8">
-            <div className="rounded-full bg-blue-500 p-4 dark:bg-blue-500/80">
+            <div className="rounded-full bg-blue-500/80 p-4">
                 <Palette />
             </div>
             <h1 className="text-foreground">Interactive whiteboard</h1>

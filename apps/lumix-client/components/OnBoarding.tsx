@@ -34,7 +34,7 @@ export const OnBoarding = () : JSX.Element => {
     }
     ]
     return <div className="p-5 w-full h-full space-y-2">
-        <p className="text-md font-bold dark:text-white text-black">Get your Brain cells work with Lumix</p>
+        <p className="text-md font-bold text-white">Get your Brain cells work with Lumix</p>
         <div className="sm:flex w-full h-full gap-2 items-center flex flex-col">
             <div className="w-full flex flex-col mt-5 h-full justify-between">
                 <div className="w-full flex gap-5 items-center">
