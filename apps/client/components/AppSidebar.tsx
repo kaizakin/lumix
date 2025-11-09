@@ -1,7 +1,6 @@
 "use client";
 
 import { BookOpen, ChevronDown, Home, Podcast } from "lucide-react"
-import logo from "@/public/Logo_lumix.png"
 import Image from "next/image"
 import { asimovian } from "@/style/font"
 import {
@@ -36,7 +35,7 @@ const items = [
     }
 ]
 
-export function AppSidebar() :JSX.Element {
+export function AppSidebar(): JSX.Element {
     const { state } = useSidebar();
     const [open, setOpen] = useState(false);
     return (
@@ -44,7 +43,7 @@ export function AppSidebar() :JSX.Element {
             <Sidebar variant="floating" collapsible="icon" className="outline-none">
                 <SidebarHeader>
                     <div className="flex gap-3">
-                        <Image className="h-7 w-7" src={logo} alt="Lumix" />
+                        <Image width={7} height={7} className="h-7 w-7" src="/lumixlogo.png" alt="Lumix" />
                         {state === "expanded" && <span className={`${asimovian.className} font-bold text-xl`}>Lumix</span>}
                     </div>
                 </SidebarHeader>
@@ -99,9 +98,9 @@ export function AppSidebar() :JSX.Element {
                             </SidebarGroupLabel>
                         </SidebarGroup>
                         <SidebarMenuItem>
-                            <SidebarMenuSubItem className="flex justify-center">
+                            <div className="flex justify-center">
                                 <JoinDiscordButton />
-                            </SidebarMenuSubItem>
+                            </div>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarContent>
