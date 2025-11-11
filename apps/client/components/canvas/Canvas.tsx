@@ -15,6 +15,8 @@ import { RoughArrow } from '@/lib/shapes/RoughArrow';
 import { RoughPencil } from '@/lib/shapes/RoughPencil';
 import { RoughText } from '@/lib/shapes/RoughText';
 import { ERASER_CONFIG } from '@/utils/constants';
+import { ZOOM_CONFIG } from '@/utils/constants';
+import { eraseShapeAtPoint } from '@/utils/canvashelpers/shapeHelpers';
 type RoughShape = RoughRectangle | RoughEllipse | RoughDiamond | RoughArrow | RoughLine | RoughPencil | RoughText | null;
 
 export function Canvas() {
@@ -45,6 +47,11 @@ export function Canvas() {
   const [eraserCursor, setEraserCursor] = useState({ x: 0, y: 0, visible: false });
   const [isErasing, setIsErasing] = useState(false);
   const erasedShapesRef = useRef<Set<string>>(new Set()); // Track erased shapes in current stroke
+  // Pan and Zoom state
+  const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
+  const [stageScale, setStageScale] = useState(1);
+  const [isPanning, setIsPanning] = useState(false);
+  const lastPanPosRef = useRef({ x: 0, y: 0 });
 
 
   useEffect(() => {
@@ -84,164 +91,92 @@ export function Canvas() {
       container.style.cursor = 'crosshair';
     } else if (tool === ToolType.TEXT) {
       container.style.cursor = 'text';
+    } else if (tool === ToolType.SELECTION || isPanning) {
+      container.style.cursor = isPanning ? 'grabbing' : 'grab';
     } else {
       container.style.cursor = 'default';
     }
-  }, [tool]);
+  }, [tool, isPanning]);
 
-
-  const getShapeAtPoint = (x: number, y: number): Konva.Shape | Konva.Group | null => {
-    if (!layerRef.current) return null;
-
-    const shapes = layerRef.current.getChildren();
-
-    // Check each shape in reverse order (top to bottom) coz last drawn shape will be at the top dumbass.
-    for (let i = shapes.length - 1; i >= 0; i--) {
-      const shape = shapes[i];
-
-      if (!shape) continue;
-
-      // Skip the eraser cursor circle
-      if (shape.name() === 'eraserCursor') continue;
-
-      // Special handling for point-based shapes (Line, Arrow, Pencil)
-      if (shape instanceof RoughLine ||
-        shape instanceof RoughArrow ||
-        shape instanceof RoughPencil) {
-
-        // Get points array
-        let points: number[] = [];
-
-        if (shape instanceof RoughArrow) {
-          points = shape.getPoints();
-        } else if (shape instanceof RoughLine) {
-          points = shape.getEndPoints();
-        } else if (shape instanceof RoughPencil) {
-          points = shape.getPoints();
-        }
-
-        // Check if cursor is near any point in the line/path
-        if (isPointNearPath(x, y, points, ERASER_CONFIG.hitRadius)) {
-          console.log('Found point-based shape:', shape.constructor.name);
-          return shape as Konva.Shape | Konva.Group;
-        }
-
-        continue; // Skip normal bounding box check for these shapes
-      }
-
-      // Get the shape's bounding box
-      const box = shape.getClientRect();
-
-      // Check if point is inside bounding box with some padding
-      const padding = ERASER_CONFIG.hitRadius;
-      if (
-        x >= box.x - padding &&
-        x <= box.x + box.width + padding &&
-        y >= box.y - padding &&
-        y <= box.y + box.height + padding
-      ) {
-        return shape as Konva.Shape | Konva.Group;
-      }
-    }
-
-    return null;
+  // Zoom functions
+  const handleZoomIn = () => {
+    const newScale = Math.min(stageScale + ZOOM_CONFIG.step, ZOOM_CONFIG.max);
+    zoomToCenter(newScale);
   };
 
-  // Helper function to check if point is near a path (line/pencil/arrow)
-  const isPointNearPath = (
-    x: number,
-    y: number,
-    points: number[],
-    threshold: number
-  ): boolean => {
-    if (points.length < 4) return false; // Need at least 2 points (x1,y1,x2,y2)
-
-    for (let i = 0; i < points.length - 2; i += 2) {
-      const x1 = points[i];
-      const y1 = points[i + 1];
-      const x2 = points[i + 2];// this overlaps the last x2,y2 that is why +=2
-      const y2 = points[i + 3];
-
-      // Calculate distance from point to line segment
-      const distance = distanceToLineSegment(x, y, x1 as number, y1 as number, x2 as number, y2 as number);
-
-      if (distance <= threshold) {// threshold is the hit radius.
-        return true; // Point is close enough to this segment
-      }
-    }
-
-    return false;
+  const handleZoomOut = () => {
+    const newScale = Math.max(stageScale - ZOOM_CONFIG.step, ZOOM_CONFIG.min);
+    zoomToCenter(newScale);
   };
 
-  // Calculate distance from point to line segment
-  // complex math mind goes brr ask claude if have any doubts.
-  const distanceToLineSegment = (
-    px: number, py: number,  // Point to check
-    x1: number, y1: number,  // Line start
-    x2: number, y2: number   // Line end
-  ): number => {
-    // Vector from line start to end
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-
-    // If line is actually a point
-    if (dx === 0 && dy === 0) {
-      return Math.sqrt((px - x1) ** 2 + (py - y1) ** 2);// pythagorean theorem.
-    }
-
-    // Calculate the t parameter (projection of point onto line)
-    let t = ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy);
-
-    // Clamp t to [0, 1] to stay within the line segment
-    t = Math.max(0, Math.min(1, t));
-
-    // Find the closest point on the line segment
-    const closestX = x1 + t * dx;
-    const closestY = y1 + t * dy;
-
-    // Return distance from point to closest point on segment
-    return Math.sqrt((px - closestX) ** 2 + (py - closestY) ** 2);
+  const handleResetZoom = () => {
+    setStageScale(1);
+    setStagePos({ x: 0, y: 0 });
   };
 
+  const zoomToCenter = (newScale: number) => {
+    if (!stageRef.current) return;
 
-  const eraseShapeAtPoint = (x: number, y: number) => {
-    const shape = getShapeAtPoint(x, y);
+    const stage = stageRef.current;
+    const oldScale = stage.scaleX();
 
-    if (shape) {
-      const shapeId = shape.id();
+    // center of the stage.
+    const center = {
+      x: stage.width() / 2,
+      y: stage.height() / 2,
+    };
 
-      // Prevent erasing same shape multiple times in one stroke
-      if (erasedShapesRef.current.has(shapeId)) {
-        return;
-      }
+    const mousePointTo = {
+      x: (center.x - stage.x()) / oldScale, // how far the stage’s origin is from the screen center. Dividing by oldScale converts that screen distance into the stage’s coordinate space
+      y: (center.y - stage.y()) / oldScale,
+    };
 
-      console.log('Erasing shape:', shapeId);
+    const newPos = { // We adjust the stage’s x and y to keep that same point under the center, even after zooming in or out.
+      x: center.x - mousePointTo.x * newScale,
+      y: center.y - mousePointTo.y * newScale,
+    };
 
-      // Add to erased set
-      erasedShapesRef.current.add(shapeId);
+    // "If we zoom in, push the stage outward so the same center stays visible.
+    // If we zoom out, pull it inward accordingly."
+    setStageScale(newScale);
+    setStagePos(newPos);
+  };
 
-      // Animate removal 
-      const box = shape.getClientRect();
-      
-      // Set scaling origin to center
-      /// by default origin is at the left top, set it to center to make the fade transition.
-      shape.offsetX(box.width / 2);
-      shape.offsetY(box.height / 2);
-      shape.x(shape.x() + box.width / 2);
-      shape.y(shape.y() + box.height / 2);
-      
-      /// it's the konva's built-in animation method here it animates shrinking and fading on eraasing a shape.
-      shape.to({
-        opacity: 0,
-        scaleX: 0.9,
-        scaleY: 0.9,
-        duration: 0.05,
-        onFinish: () => {
-          shape.destroy();
-          layerRef.current?.batchDraw();
-        }
-      });
+  const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
+    e.evt.preventDefault();
+
+    const stage = e.target.getStage();
+    if (!stage) return;
+
+    const oldScale = stage.scaleX();
+    const pointer = stage.getPointerPosition();
+    if (!pointer) return;
+
+    const mousePointTo = {
+      x: (pointer.x - stage.x()) / oldScale,
+      y: (pointer.y - stage.y()) / oldScale,
+    };
+
+    // Determine zoom direction and amount
+    let direction = e.evt.deltaY > 0 ? -1 : 1;
+
+    // Check if it's a pinch gesture (trackpad)
+    if (e.evt.ctrlKey) {
+      direction = e.evt.deltaY > 0 ? -1 : 1;
     }
+
+    const newScale = Math.min(
+      Math.max(oldScale + direction * ZOOM_CONFIG.wheelStep * Math.abs(e.evt.deltaY), ZOOM_CONFIG.min),
+      ZOOM_CONFIG.max
+    );
+
+    const newPos = {
+      x: pointer.x - mousePointTo.x * newScale,
+      y: pointer.y - mousePointTo.y * newScale,
+    };
+
+    setStageScale(newScale);
+    setStagePos(newPos);
   };
 
   const handleMouseDown = (e: KonvaEventObject<MouseEvent>) => {
@@ -256,19 +191,36 @@ export function Canvas() {
     const pos = stage.getPointerPosition();
     if (!pos) return;
 
+    // Middle mouse button or Space + left click for panning
+    const isMiddleButton = e.evt.button === 1;
+    const isSpacePan = e.evt.button === 0 && e.evt.shiftKey;
+
+    if (isMiddleButton || isSpacePan || (tool === ToolType.SELECTION && e.evt.button === 0)) {
+      setIsPanning(true);
+      lastPanPosRef.current = { x: pos.x, y: pos.y };
+      return;
+    }
+
     if (tool === ToolType.ERASER) {
       console.log('Eraser mouse down');
       setIsErasing(true);
       erasedShapesRef.current.clear(); // Reset already erased shapes in prev stroke.
-      eraseShapeAtPoint(pos.x, pos.y);
+      // Transform eraser position to account for zoom/pan
+      const transform = stage.getAbsoluteTransform().copy().invert();
+      const adjustedPos = transform.point(pos);
+      eraseShapeAtPoint(adjustedPos.x, adjustedPos.y, layerRef as React.RefObject<Konva.Layer>, erasedShapesRef);
       return;
     }
 
     if (tool === ToolType.SELECTION) return; // don't draw anything for a select tool dumbass.
 
+    // Transform mouse position to canvas space (accounting for zoom/pan)
+    const transform = stage.getAbsoluteTransform().copy().invert();
+    const adjustedPos = transform.point(pos);
 
-    startPosRef.current.x = pos.x;
-    startPosRef.current.y = pos?.y;
+
+    startPosRef.current.x = adjustedPos.x;
+    startPosRef.current.y = adjustedPos?.y;
     setIsDrawing(true);
 
     const id = `shape-${Date.now()}`;
@@ -279,8 +231,8 @@ export function Canvas() {
       case ToolType.RECTANGLE:
         shape = new RoughRectangle({
           id,
-          x: pos.x,
-          y: pos.y,
+          x: adjustedPos.x,
+          y: adjustedPos.y,
           width: 0,
           height: 0,
           stroke: strokeColor,
@@ -291,8 +243,8 @@ export function Canvas() {
       case ToolType.ELLIPSE:
         shape = new RoughEllipse({
           id,
-          x: pos.x,
-          y: pos.y,
+          x: adjustedPos.x,
+          y: adjustedPos.y,
           width: 0,
           height: 0,
           stroke: strokeColor,
@@ -303,8 +255,8 @@ export function Canvas() {
       case ToolType.DIAMOND:
         shape = new RoughDiamond({
           id,
-          x: pos.x,
-          y: pos.y,
+          x: adjustedPos.x,
+          y: adjustedPos.y,
           width: 0,
           height: 0,
           stroke: strokeColor,
@@ -318,7 +270,7 @@ export function Canvas() {
           id,
           x: 0,              // Lines don't use x,y position
           y: 0,
-          points: [pos.x, pos.y, pos.x, pos.y],  // [x1, y1, x2, y2]
+          points: [adjustedPos.x, adjustedPos.y, adjustedPos.x, adjustedPos.y],  // [x1, y1, x2, y2]
           stroke: strokeColor,
           strokeWidth,
           roughness,
@@ -331,7 +283,7 @@ export function Canvas() {
           id,
           x: 0,              // Arrows don't use x,y position
           y: 0,
-          points: [pos.x, pos.y, pos.x, pos.y],  // [x1, y1, x2, y2] initially starting and ending points are same / update endpoint later.
+          points: [adjustedPos.x, adjustedPos.y, adjustedPos.x, adjustedPos.y],  // [x1, y1, x2, y2] initially starting and ending points are same / update endpoint later.
           stroke: strokeColor,
           strokeWidth,
           roughness,
@@ -344,7 +296,7 @@ export function Canvas() {
           id,
           x: 0,
           y: 0,
-          points: [pos.x, pos.y],  // Start with first point
+          points: [adjustedPos.x, adjustedPos.y],  // Start with first point
           stroke: strokeColor,
           strokeWidth,
           roughness,
@@ -355,14 +307,14 @@ export function Canvas() {
         // braces to avoid potential naming conflicts.
         console.log('Creating text at position:', pos);
 
-        const adjustedY = pos.y - 40;// there is a difference between the textarea and konva text rendering baseline 
+        const adjustedY = adjustedPos.y - 40;// there is a difference between the textarea and konva text rendering baseline 
         // Textarea: Text starts from the top of the element (with some internal padding)
         // Konva.Text: By default, text is positioned by its baseline (the line where letters sit), not the top
         // this -40 is hardcoded and trial and error by me i don't think this is a proper solution but it works. 
 
         shape = new RoughText({
           id,
-          x: pos.x,
+          x: adjustedPos.x,
           y: adjustedY,
           text: '',
           fontSize: fontSize,
@@ -371,10 +323,11 @@ export function Canvas() {
         });
 
         // Store position for textarea
-        setTextPosition({ x: pos.x, y: pos.y });
+        setTextPosition({ x: adjustedPos.x, y: pos.y });
         setIsEditingText(true);
         setIsDrawing(false);
-
+        // Convert canvas coordinates back to screen coordinates for textarea
+        setTextPosition({ x: pos.x, y: pos.y });
         console.log('Text shape created, editing mode activated');
         break;
       }
@@ -402,12 +355,28 @@ export function Canvas() {
     const pos = stage.getPointerPosition();
     if (!pos) return;
 
+    // Handle panning
+    if (isPanning) {
+      const dx = pos.x - lastPanPosRef.current.x;
+      const dy = pos.y - lastPanPosRef.current.y;
+
+      setStagePos({
+        x: stagePos.x + dx,
+        y: stagePos.y + dy,
+      });
+
+      lastPanPosRef.current = { x: pos.x, y: pos.y };
+      return;
+    }
+
     if (tool === ToolType.ERASER) {
       setEraserCursor({ x: pos.x, y: pos.y, visible: true });
 
       // If erasing (mouse down), erase shapes under cursor
       if (isErasing) {
-        eraseShapeAtPoint(pos.x, pos.y);
+        const transform = stage.getAbsoluteTransform().copy().invert();
+        const adjustedPos = transform.point(pos);
+        eraseShapeAtPoint(adjustedPos.x, adjustedPos.y, layerRef as React.RefObject<Konva.Layer>, erasedShapesRef);
       }
       return;
     }
@@ -420,9 +389,13 @@ export function Canvas() {
 
     if (!isDrawing || !currentShapeRef.current) return;
 
+    // Transform mouse position to canvas space
+    const transform = stage.getAbsoluteTransform().copy().invert();
+    const adjustedPos = transform.point(pos);
+
     // pencil: Add points continuously
     if (tool === ToolType.PENCIL && currentShapeRef.current instanceof RoughPencil) {
-      currentShapeRef.current.addPoint(pos.x, pos.y);
+      currentShapeRef.current.addPoint(adjustedPos.x, adjustedPos.y);
       layerRef.current?.batchDraw();
     }
     // line & arrow: Update end point
@@ -430,8 +403,8 @@ export function Canvas() {
       const newPoints = [
         startPosRef.current.x,
         startPosRef.current.y,
-        pos.x,
-        pos.y,
+        adjustedPos.x,
+        adjustedPos.y,
       ];
 
       // Update the points - this triggers a redraw with new line position
@@ -446,8 +419,8 @@ export function Canvas() {
     else if (tool === ToolType.RECTANGLE ||
       tool === ToolType.ELLIPSE ||
       tool === ToolType.DIAMOND) {
-      const width = pos.x - startPosRef.current.x;
-      const height = pos.y - startPosRef.current.y;
+      const width = adjustedPos.x - startPosRef.current.x;
+      const height = adjustedPos.y - startPosRef.current.y;
 
       // Update shape dimensions (absolute values)
       currentShapeRef.current.width(Math.abs(width));
@@ -455,10 +428,10 @@ export function Canvas() {
 
       // Adjust position if dragging left or up (negative width/height)
       if (width < 0) {
-        currentShapeRef.current.x(pos.x);
+        currentShapeRef.current.x(adjustedPos.x);
       }
       if (height < 0) {
-        currentShapeRef.current.y(pos.y);
+        currentShapeRef.current.y(adjustedPos.y);
       }
     }
 
@@ -466,6 +439,12 @@ export function Canvas() {
   };
 
   const handleMouseUp = () => {
+
+    if (isPanning) {
+      setIsPanning(false);
+      return;
+    }
+
     if (isErasing) {
       console.log('Eraser mouse up');
       setIsErasing(false);
@@ -494,34 +473,31 @@ export function Canvas() {
       erasedShapesRef.current.clear();
     }
 
+    if (isPanning) {
+      setIsPanning(false);
+    }
+
     // Hide eraser cursor
     setEraserCursor({ ...eraserCursor, visible: false });
   };
 
   const handleTextSubmit = (text: string) => {
-    console.log('Text submit called with:', text);
-    console.log('Current shape:', currentShapeRef.current);
 
     if (!isTextReadyRef.current) {
-      console.log('Text input not ready yet, ignoring blur');
       return;
     }
 
     if (!currentShapeRef.current) {
-      console.log('No current shape, closing text editor');
       setIsEditingText(false);
       return;
     }
 
     if (currentShapeRef.current instanceof RoughText) {
       if (text.trim()) {
-        console.log('Updating text shape with:', text);
         currentShapeRef.current.text(text);
         currentShapeRef.current.visible(true);
         layerRef.current?.batchDraw();
-        console.log('Text updated and drawn');
       } else {
-        console.log('Empty text, destroying shape');
         currentShapeRef.current.destroy();
         layerRef.current?.batchDraw();
       }
@@ -553,14 +529,55 @@ export function Canvas() {
   return (
     <div className='text-foreground relative'>
       <Toolbar onToolChange={setTool} selectedTool={tool} />
+      {/* Zoom Controls */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black border border-gray-300 rounded-lg shadow-lg px-3 py-2 z-50">
+        <button
+          onClick={handleZoomOut}
+          className="p-2 hover:bg-gray-100 rounded transition-colors"
+          title="Zoom Out"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21l-4.35-4.35" />
+            <line x1="8" y1="11" x2="14" y2="11" />
+          </svg>
+        </button>
+
+        <button
+          onClick={handleResetZoom}
+          className="px-3 py-1 hover:bg-gray-100 rounded transition-colors text-sm font-medium min-w-[60px]"
+          title="Reset Zoom"
+        >
+          {Math.round(stageScale * 100)}%
+        </button>
+
+        <button
+          onClick={handleZoomIn}
+          className="p-2 hover:bg-gray-100 rounded transition-colors"
+          title="Zoom In"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21l-4.35-4.35" />
+            <line x1="11" y1="8" x2="11" y2="14" />
+            <line x1="8" y1="11" x2="14" y2="11" />
+          </svg>
+        </button>
+      </div>
       <Stage
         width={stageSize.width}
         height={stageSize.height}
         ref={stageRef}
+        scaleX={stageScale}
+        scaleY={stageScale}
+        x={stagePos.x}
+        y={stagePos.y}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
+        onWheel={handleWheel}
+        draggable={false}
       >
         <Layer ref={layerRef} />
         <Layer ref={layerRef}>
@@ -603,10 +620,11 @@ export function Canvas() {
             lineHeight: 1.5,
             width: 'auto',
             height: 'auto',
-            transformOrigin: 'left top' // Ensures scaling/positioning happens from the top-left corner like the canvas coordinate system 
+            transformOrigin: 'left top', // Ensures scaling/positioning happens from the top-left corner like the canvas coordinate system 
             // Canvas coordinates start at (0,0) = top-left.
             // DOM transforms by default start at center.
             // This line makes both behave the same — so your overlay textarea doesn’t drift or misalign when scaling/zooming.
+            transform: `scale(${stageScale})` // Scale textarea with canvas
           }}
           onMouseDown={(e) => {
             // Prevent event from bubbling to Stage it will steal focus from textarea.
