@@ -37,3 +37,10 @@ export const ERASER_CONFIG = {
   cursorSize: 5,      // Visual size of eraser cursor
   hitRadius: 10,       // Detection radius (smaller = more precise)
 };
+
+export const ZOOM_CONFIG = {
+  min: 0.1,
+  max: 5,
+  step: 0.1,
+  wheelStep: 0.001, // Smooth zoom with wheel
+};
