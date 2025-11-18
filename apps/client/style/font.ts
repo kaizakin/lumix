@@ -9,3 +9,14 @@ export const asimovian = localFont({
     },
   ],
 });
+
+export const MapleMono = localFont({
+  src:[
+    {
+      path: "../public/MapleMono-LightItalic.ttf",
+      weight: "400",
+      style: "normal"
+    }
+  ],
+  variable: "--font-maple"
+})

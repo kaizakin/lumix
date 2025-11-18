@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Inter} from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
+import { MapleMono } from "@/style/font";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -13,7 +14,7 @@ export default function RootLayout({children,}: Readonly<{children: React.ReactN
   return (
     <html lang="en" className="dark">
       <body
-        className={`${inter.className} antialiased text-sm`}
+        className={`${inter.className} ${MapleMono.variable} antialiased text-sm`}
       >
         {children}
       </body>
