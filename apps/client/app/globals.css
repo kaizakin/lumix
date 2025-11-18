@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 /* Dark theme only - no theme switching */
 
@@ -101,7 +102,7 @@
 }
 
 @theme {
-  --color-back: #37353E; /* Replace with your desired hex code */
+  --color-back: #37353e; /* Replace with your desired hex code */
 }
 
 /* Define custom utility for hiding scrollbar */
@@ -124,7 +125,7 @@
     height: 4px;
   }
   &::-webkit-scrollbar-thumb {
-    background-color: rgba(100,100,100,0.5);
+    background-color: rgba(100, 100, 100, 0.5);
     border-radius: 9999px;
   }
   &::-webkit-scrollbar-track {
@@ -133,14 +134,101 @@
 }
 
 @font-face {
-  font-family: 'Virgil';
-  src: url('https://excalidraw.com/Virgil.woff2') format('woff2');
+  font-family: "Virgil";
+  src: url("https://excalidraw.com/Virgil.woff2") format("woff2");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
 
-
 @theme {
   --font-maple: var(--font-maple);
 }
+
+/* MDXEditor dark theme styling */
+.mdxeditor {
+  --baseText: oklch(0.985 0.002 247.839); /* white text */
+  --basePageBg: transparent;
+  --baseBorder: oklch(1 0 0 / 10%);
+  --baseButtonBg: oklch(0.278 0.033 256.848);
+  --baseButtonHoverBg: oklch(0.35 0.033 256.848);
+  --baseButtonText: oklch(0.985 0.002 247.839);
+  --baseButtonHoverText: oklch(0.985 0.002 247.839);
+  --baseSelectBg: oklch(0.21 0.034 264.665);
+  --baseSelectText: oklch(0.985 0.002 247.839);
+  --baseInputBg: oklch(0.278 0.033 256.848);
+  --baseInputText: oklch(0.985 0.002 247.839);
+  --baseInputBorder: oklch(1 0 0 / 15%);
+  --baseFocusRing: oklch(0.551 0.027 264.364);
+  --baseToolbarBg: oklch(0.21 0.034 264.665);
+  --baseToolbarBorder: oklch(1 0 0 / 10%);
+  --baseToolbarButtonBg: transparent;
+  --baseToolbarButtonHoverBg: oklch(0.278 0.033 256.848);
+  --baseToolbarButtonText: oklch(0.985 0.002 247.839);
+  --baseToolbarButtonHoverText: oklch(0.985 0.002 247.839);
+  --baseToolbarButtonActiveBg: oklch(0.35 0.033 256.848);
+  --baseToolbarButtonActiveText: oklch(0.985 0.002 247.839);
+}
+
+.mdxeditor-toolbar {
+  background-color: var(--baseToolbarBg) !important;
+  border-bottom: 1px solid var(--baseToolbarBorder) !important;
+  padding: 0.5rem;
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.mdxeditor-toolbar button {
+  color: var(--baseToolbarButtonText) !important;
+  background-color: var(--baseToolbarButtonBg) !important;
+}
+
+.mdxeditor-toolbar button:hover {
+  background-color: var(--baseToolbarButtonHoverBg) !important;
+  color: var(--baseToolbarButtonHoverText) !important;
+}
+
+.mdxeditor-toolbar button[aria-pressed="true"] {
+  background-color: var(--baseToolbarButtonActiveBg) !important;
+  color: var(--baseToolbarButtonActiveText) !important;
+}
+
+.mdxeditor-root-contenteditable {
+  color: var(--baseText) !important;
+}
+
+.mdxeditor-root-contenteditable * {
+  color: inherit !important;
+}
+
+/* Your global.css */
+.mdxeditor-root {
+  --mdxeditor-color-foreground: #ffffff !important;
+  --mdxeditor-color-text: #ffffff !important;
+  --mdxeditor-color-muted: #e0e0e0 !important;
+}
+
+.mdxeditor-root h1,
+.mdxeditor-root h2,
+.mdxeditor-root h3,
+.mdxeditor-root h4,
+.mdxeditor-root h5,
+.mdxeditor-root h6,
+.mdxeditor-root p,
+.mdxeditor-root li,
+.mdxeditor-root blockquote {
+  color: #ffffff !important;
+}
+
+/* Make all MDXEditor toolbar icons white */
+.mdxeditor-root .mdxeditor-toolbar button svg {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+
+.mdxeditor-root {
+  --mdxeditor-color-foreground: #ffffff !important;
+}
+

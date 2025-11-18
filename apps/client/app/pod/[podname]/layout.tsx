@@ -36,11 +36,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             <PodDescription podTitle={"Product innovation pod"} podDescription={"This is a idea discussion for the upcoming lumix project for our hackathon"} activeMembers={4} />
         </div>
 
-        <div className="flex-1 flex overflow-hidden">
-            <div className="flex flex-col w-full">
+        <div className="flex-1 flex overflow-hidden min-h-0">
+            <div className="flex flex-col w-full min-h-0">
                 {!(isSidebarOpen && isMobile) && (<>
-                    <div className="flex-1 transition-all duration-300 ease-in-out">
-                        { children }
+                    <div className="flex-1 transition-all duration-300 ease-in-out min-h-0 overflow-hidden">
+                        {children}
                     </div>
 
                     <div className="border border-t p-2 flex h-73px">

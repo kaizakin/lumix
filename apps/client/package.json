@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@mdxeditor/editor": "^3.49.2",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-collapsible": "^1.1.12",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -38,6 +39,7 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "^4",
+    "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^20",
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.1",

@@ -3,21 +3,22 @@ import {
     ResizablePanel,
     ResizablePanelGroup,
 } from "@/components/ui/resizable"
+import { MarkdownEditor } from "./MarkdownEditor"
 
 export function Resizable() {
     return (
         <ResizablePanelGroup
             direction="horizontal"
-            className="h-full w-full rounded-lg border"
+            className="h-full w-full rounded-md border"
         >
-            <ResizablePanel defaultSize={50}>
-                <div className="flex h-full w-full bg-amber-300 items-center justify-center p-6">
-                    <span className="font-semibold">One</span>
+            <ResizablePanel defaultSize={50} className="min-h-0 overflow-hidden">
+                <div className="h-full w-full overflow-hidden">
+                    <MarkdownEditor />
                 </div>
             </ResizablePanel>
             <ResizableHandle />
-            <ResizablePanel defaultSize={50}>
-                <div className="flex bg-amber-400 h-full w-full items-center justify-center p-6">
+            <ResizablePanel defaultSize={50} className="min-h-0 overflow-hidden">
+                <div className="flex h-full w-full items-center justify-center p-6">
                     <span className="font-semibold">Two</span>
                 </div>
             </ResizablePanel>
