@@ -1,5 +1,4 @@
 "use client";
-
 import dynamic from "next/dynamic";
 import { useState } from "react";
 
@@ -25,12 +24,13 @@ import {
   codeMirrorPlugin,
   UndoRedo,
   BoldItalicUnderlineToggles,
-  ListsToggle,
-  BlockTypeSelect,
-  CreateLink,
   InsertTable,
-  InsertCodeBlock,
-  InsertThematicBreak,
+  DiffSourceToggleWrapper,
+  imagePlugin,
+  InsertImage,
+  sandpackPlugin,
+  KitchenSinkToolbar,
+  directivesPlugin,
 } from "@mdxeditor/editor";
 
 export function MarkdownEditor() {
@@ -39,47 +39,67 @@ export function MarkdownEditor() {
   return (
     <div className="relative h-full w-full flex flex-col overflow-hidden">
       <div className="flex-1 min-h-0 overflow-hidden relative">
-        <MDXNoteEditor markdown={markdown} onChange={setMarkdown} />
+        <MDXNoteEditor
+          markdown={markdown}
+          onChange={setMarkdown}
+        />
       </div>
     </div>
   );
 }
 
-function MDXNoteEditor({ markdown, onChange }: { markdown: string; onChange: (value: string) => void }) {
+function MDXNoteEditor({
+  markdown,
+  onChange,
+}: {
+  markdown: string;
+  onChange: (value: string) => void;
+}) {
   return (
-    <div className="h-full w-full flex flex-col text-whit overflow-auto scrollbar-custom-thin">
+    <div className="h-full w-full flex flex-col  overflow-auto scrollbar-custom-thin">
       <MDXEditor
         markdown={markdown}
         onChange={onChange}
+        className="dark-editor dark-theme"
         plugins={[
           toolbarPlugin({
             toolbarContents: () => (
-              <>
+              <DiffSourceToggleWrapper>
                 <UndoRedo />
                 <BoldItalicUnderlineToggles />
-                <BlockTypeSelect />
-                <ListsToggle />
-                <CreateLink />
                 <InsertTable />
-                <InsertCodeBlock />
-                <InsertThematicBreak />
-              </>
+                <InsertImage />
+              </DiffSourceToggleWrapper>
             ),
           }),
+          headingsPlugin({ allowedHeadingLevels: [1, 2, 3, 4, 5, 6] }),
           listsPlugin(),
           quotePlugin(),
-          headingsPlugin({ allowedHeadingLevels: [1, 2, 3, 4, 5, 6] }),
           linkPlugin(),
-          linkDialogPlugin(),
           tablePlugin(),
+          imagePlugin(),
           thematicBreakPlugin(),
-          markdownShortcutPlugin(),
+          sandpackPlugin(),
           codeBlockPlugin({ defaultCodeBlockLanguage: 'txt' }),
-          codeMirrorPlugin({ codeBlockLanguages: { js: 'JavaScript', ts: 'TypeScript', jsx: 'JSX', tsx: 'TSX', css: 'CSS', html: 'HTML', json: 'JSON', md: 'Markdown', py: 'Python', sh: 'Shell' } }),
+          codeMirrorPlugin({
+            codeBlockLanguages: {
+              js: 'JavaScript',
+              ts: 'TypeScript',
+              jsx: 'JSX',
+              tsx: 'TSX',
+              css: 'CSS',
+              html: 'HTML',
+              json: 'JSON',
+              md: 'Markdown',
+              py: 'Python',
+              sh: 'Shell',
+              txt: 'Plain Text'
+            }
+          }),
+          markdownShortcutPlugin(),
           diffSourcePlugin({ viewMode: 'rich-text', diffMarkdown: '' }),
         ]}
-        className="mdxeditor-root h-full w-full prose prose-invert max-w-none text-white"
-        contentEditableClassName="prose prose-invert max-w-none focus:outline-none min-h-full p-4"
+        contentEditableClassName="prose prose-invert max-w-none text-sm bg-black focus:outline-none min-h-full p-4"
       />
     </div>
   );
