@@ -9,10 +9,13 @@ import { PodDescription } from "@/components/PodDescription";
 import { PodSideBar } from "@/components/podsidebar/PodSidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SwitchPanes } from "@/components/SwitchPanes";
+import { useTabStore } from "@/store/useTabStore";
+import { Tabenum } from "@/store/useTabStore";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
     // const params = useParams();
     // const podname = params.podname as string;
+    const tab = useTabStore((s) => s.currentTab);
     const isMobile = useIsMobile();
     const [iscameraOn, setIscamerOn] = useState(false);
     const [isMicOn, setIsMicOn] = useState(false);
@@ -22,8 +25,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             <div className="flex items-center justify-between px-6 py-2">
                 <BackButton />
                 <div className="flex justify-center">
-
-                <SwitchPanes />
+                    <SwitchPanes />
                 </div>
                 <div className="flex items-center space-x-3">
                     <Button variant="outline" size="sm" className="hover:bg-green-400/50 hover:text-white cursor-pointer">
@@ -37,9 +39,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             </div>
         </header>
 
-        <div className="h-73px">
-            <PodDescription podTitle={"Product innovation pod"} podDescription={"This is a idea discussion for the upcoming lumix project for our hackathon"} activeMembers={4} />
-        </div>
+        {tab == Tabenum.Home &&
+            <div className="h-73px">
+                <PodDescription podTitle={"Product innovation pod"} podDescription={"This is a idea discussion for the upcoming lumix project for our hackathon"} activeMembers={4} />
+            </div>
+        }
 
         <div className="flex-1 flex overflow-hidden min-h-0">
             <div className="flex flex-col w-full min-h-0">

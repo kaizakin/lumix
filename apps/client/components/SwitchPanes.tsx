@@ -1,10 +1,11 @@
 "use client";
 
+import { useTabStore, Tabenum } from "@/store/useTabStore";
 import { Tabs, Tab } from "@heroui/react";
-import { useState } from "react";
 
 export function SwitchPanes() {
-  const [selected, setSelected] = useState("");
+  const selectedTab = useTabStore((s) => s.currentTab);
+  const setSelectedTab = useTabStore((s) => s.setTab);
   return (
     <div className="flex w-full flex-col">
       <Tabs aria-label="Options" color="primary" variant="solid" classNames={{
@@ -12,15 +13,15 @@ export function SwitchPanes() {
         cursor:
           "bg-primary/40 transition-all duration-300 rounded-md",
       }}
-        selectedKey={selected}
-        onSelectionChange={(key) => setSelected(String(key))}
+        selectedKey={selectedTab}
+        onSelectionChange={(key) => setSelectedTab(key as Tabenum)}
         defaultSelectedKey={"home"}
       >
-        <Tab key="home" title="Home" />
-        <Tab key="music" title="Canvas" />
-        <Tab key="chat" title="Chat" />
-        <Tab key="files" title="Files" />
-        <Tab key="schedule" title="Schedule" />
+        <Tab key={Tabenum.Home} title="Home" />
+        <Tab key={Tabenum.Canvas} title="Canvas" />
+        <Tab key={Tabenum.Chat} title="Chat" />
+        <Tab key={Tabenum.Files} title="Files" />
+        <Tab key={Tabenum.Schedule} title="Schedule" />
       </Tabs>
     </div>
   );
