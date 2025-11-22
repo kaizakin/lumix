@@ -14,7 +14,6 @@ import {
   listsPlugin,
   quotePlugin,
   linkPlugin,
-  linkDialogPlugin,
   tablePlugin,
   thematicBreakPlugin,
   markdownShortcutPlugin,
@@ -29,8 +28,6 @@ import {
   imagePlugin,
   InsertImage,
   sandpackPlugin,
-  KitchenSinkToolbar,
-  directivesPlugin,
 } from "@mdxeditor/editor";
 
 export function MarkdownEditor() {

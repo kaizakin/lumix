@@ -1,17 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useParams } from 'next/navigation';
-import { PodBreadCrumb } from "@/components/PodBreadCrumb";
+// import { useParams } from 'next/navigation';
+import { BackButton } from "@/components/PodBackButton";
 import { Button } from "@/components/ui/button";
 import { Mic, MicOff, Settings, Share2, Video, VideoOff } from "lucide-react";
 import { PodDescription } from "@/components/PodDescription";
 import { PodSideBar } from "@/components/podsidebar/PodSidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { SwitchPanes } from "@/components/SwitchPanes";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
-    const params = useParams();
-    const podname = params.podname as string;
+    // const params = useParams();
+    // const podname = params.podname as string;
     const isMobile = useIsMobile();
     const [iscameraOn, setIscamerOn] = useState(false);
     const [isMicOn, setIsMicOn] = useState(false);
@@ -19,7 +20,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     return <div className="min-h-screen max-h-screen flex flex-col max-w-screen bg-background text-foreground">
         <header className="border-b border-border bg-card/10 backdrop-blur-sm">
             <div className="flex items-center justify-between px-6 py-2">
-                <PodBreadCrumb podName={podname} />
+                <BackButton />
+                <div className="flex justify-center">
+
+                <SwitchPanes />
+                </div>
                 <div className="flex items-center space-x-3">
                     <Button variant="outline" size="sm" className="hover:bg-green-400/50 hover:text-white cursor-pointer">
                         <Share2 className="h-4 w-4 mr-2" />

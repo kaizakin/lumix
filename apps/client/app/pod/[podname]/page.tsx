@@ -3,6 +3,8 @@
 import { Resizable } from "@/components/Resizable";
 
 const PodPage = () => {
-    return <Resizable/>
+    return <>
+        <Resizable />
+    </>
 }
 export default PodPage;
