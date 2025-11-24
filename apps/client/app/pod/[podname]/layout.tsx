@@ -39,7 +39,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             </div>
         </header>
 
-        {tab == Tabenum.Home &&
+        {tab == Tabenum.Storm &&
             <div className="h-73px">
                 <PodDescription podTitle={"Product innovation pod"} podDescription={"This is a idea discussion for the upcoming lumix project for our hackathon"} activeMembers={4} />
             </div>

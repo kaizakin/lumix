@@ -1,9 +1,9 @@
 import { create } from 'zustand'
 
 export enum Tabenum {
-  Home = 'home',
-  Canvas = 'canvas',
-  Chat = 'chat',
+  Storm = 'storm',
+  Scribble = 'scribble',
+  Text = 'text',
   Files = 'files',
   Schedule = 'schedule'
 }
@@ -15,6 +15,6 @@ type tabState = {
 }
 
 export const useTabStore = create<tabState>((set) => ({
-  currentTab: Tabenum.Home,
+  currentTab: Tabenum.Storm,
   setTab: (tab => set({currentTab: tab}))
 }))

@@ -17,9 +17,9 @@ export function SwitchPanes() {
         onSelectionChange={(key) => setSelectedTab(key as Tabenum)}
         defaultSelectedKey={"home"}
       >
-        <Tab key={Tabenum.Home} title="Home" />
-        <Tab key={Tabenum.Canvas} title="Canvas" />
-        <Tab key={Tabenum.Chat} title="Chat" />
+        <Tab key={Tabenum.Storm} title="Storm" />
+        <Tab key={Tabenum.Scribble} title="Scribble" />
+        <Tab key={Tabenum.Text} title="Text" />
         <Tab key={Tabenum.Files} title="Files" />
         <Tab key={Tabenum.Schedule} title="Schedule" />
       </Tabs>
