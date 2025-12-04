@@ -1,0 +1,13 @@
+// problem: if i transpile the whole src folder the generated prisma files also needs to get 
+// declarations which sometimes chokes TS and gives weird errors even tho technically everything is fine
+// so imma transpile everything in src without declarations first and then create declarations
+// excluding generated folder so it solve the issue.
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true
+  },
+  "include": ["src"],
+  "exclude": ["src/generated"]
+}

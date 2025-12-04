@@ -1,19 +1,28 @@
 {
   "name": "@repo/db",
   "version": "1.0.0",
-  "description": "",
-  "main": "src/index.ts",
+  "description": "Shared prisma client",
+  "exports": {
+    "." : "./dist/index.js"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "prisma generate && pnpm exec tsc && pnpm exec tsc --project tsconfig.declarations.json", 
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "devDependencies": {
+    "@types/node": "^20.19.19",
     "prisma": "^7.0.0"
   },
   "dependencies": {
-    "@prisma/client": "^7.0.0"
-  }
+    "@prisma/client": "^7.0.0",
+    "dotenv": "^17.2.3"
+  },
+  "packageManager": "pnpm@10.19.0"
 }
