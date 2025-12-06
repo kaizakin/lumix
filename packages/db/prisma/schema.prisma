@@ -10,21 +10,62 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+}
+
+model Account {
+  id                String  @id @default(uuid()) @db.Uuid
+  userId            String  @map("user_id") @db.Uuid
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade) // when a user is deleted acc is deleted as welll
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(uuid()) @db.Uuid
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id") @db.Uuid
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade) // when a user is deleted session is deleted as welll
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
 }
 
 model User {
-  id            String       @id @default(uuid()) @db.Uuid // datatype of this field in the db level is uuid
-  email         String?      @unique @db.VarChar(100) // similarly datatype of this  in db lvl is varchar that is what it denotes baby
-  password      String?      @db.VarChar(100)
+  id            String        @id @default(uuid()) @db.Uuid // datatype of this field in the db level is uuid
+  email         String?       @unique @db.VarChar(100) // similarly datatype of this  in db lvl is varchar that is what it denotes baby
+  password      String?       @db.VarChar(100)
   avatar        String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt // this says update the timestap whenever data change in this column.
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt // this says update the timestap whenever data change in this column.
   emailVerified DateTime?
   image         String?
   name          String?
   ChatGroup     ChatGroup[]
   ChatMessage   ChatMessage[]
+  accounts      Account[]
+  sessions      Session[]
 
   @@map("users") // name of this table in db is users.
 }
@@ -35,26 +76,23 @@ model ChatGroup {
   title       String        @db.VarChar(100)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)// when the parent is deleted delete the related records as well.
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade) // when the parent is deleted delete the related records as well.
   ChatMessage ChatMessage[]
 
   @@map("chat_groups")
 }
 
 model ChatMessage {
-  id           String    @id @default(uuid()) @db.Uuid
-  chatGroupId  String    @db.Uuid
-  sender       String
-  message      String
-  userId       String    @db.Uuid
-  userEmail    String
-  userAvatar   String?
-  createdAt    DateTime  @default(now())
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  chatGroup    ChatGroup @relation(fields: [chatGroupId], references: [id], onDelete: Cascade)
+  id          String    @id @default(uuid()) @db.Uuid
+  chatGroupId String    @db.Uuid
+  sender      String
+  message     String
+  userId      String    @db.Uuid
+  userEmail   String
+  userAvatar  String?
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chatGroup   ChatGroup @relation(fields: [chatGroupId], references: [id], onDelete: Cascade)
 
   @@map("chat_messages")
 }
-
-
-
