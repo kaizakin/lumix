@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { ChevronsUpDown, Settings, Bell, LogOut } from "lucide-react"
 import { useSidebar } from "./ui/sidebar"
 import type { JSX } from "react"
+import { signOut } from "next-auth/react"
 
 export function SidebarProfile(): JSX.Element {
   const { state } = useSidebar();
@@ -29,7 +30,7 @@ export function SidebarProfile(): JSX.Element {
         {/* <DropdownMenuItem className="p-2 flex cursor-pointer">Upgrade to Pro</DropdownMenuItem> */}
         <DropdownMenuItem className="p-2 flex cursor-pointer"><Settings />Account</DropdownMenuItem>
         <DropdownMenuItem className="p-2 flex cursor-pointer"><Bell />Notifications</DropdownMenuItem>
-        <DropdownMenuItem className="p-2 flex cursor-pointer"><LogOut />Log out</DropdownMenuItem>
+        <DropdownMenuItem className="p-2 flex cursor-pointer" onClick={() => signOut()}><LogOut />Log out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
