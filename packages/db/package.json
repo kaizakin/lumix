@@ -6,7 +6,7 @@
     ".": "./dist/index.js"
   },
   "scripts": {
-    "build": "prisma generate && pnpm exec tsc && pnpm exec tsc --project tsconfig.declarations.json", 
+    "build": "prisma generate && pnpm exec tsc",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",

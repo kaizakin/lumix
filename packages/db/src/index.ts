@@ -10,12 +10,20 @@ const createPrismaClient = () => {
   })
 
   const adapter = new PrismaPg(pool)
+  console.log('PrismaPg adapter created:', !!adapter);
 
-  return new PrismaClient({ adapter })
+  try {
+    const client = new PrismaClient({ adapter });
+    console.log('PrismaClient instantiated successfully');
+    return client;
+  } catch (e) {
+    console.error('Error instantiating PrismaClient:', e);
+    throw e;
+  }
 }
 
 const globalForPrisma = globalThis as unknown as { prisma: ReturnType<typeof createPrismaClient> | undefined }
 
-export const prisma = globalForPrisma.prisma || createPrismaClient()
+export const prisma: PrismaClient = globalForPrisma.prisma || createPrismaClient()
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma; // singleton pattern.
