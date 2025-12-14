@@ -5,8 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider        = "prisma-client"
-  output          = "../src/generated/prisma"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -66,8 +66,23 @@ model User {
   ChatMessage   ChatMessage[]
   accounts      Account[]
   sessions      Session[]
+  createdPods   Pod[]         @relation("PodAdmin") // one to many relationship
+  joinedPods    Pod[]         @relation("PodMembers") // many to many relationship
 
   @@map("users") // name of this table in db is users.
+}
+
+model Pod {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  title       String   @db.VarChar(100)
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  admin       User     @relation("PodAdmin", fields: [userId], references: [id], onDelete: Cascade)
+  members     User[]   @relation("PodMembers") // this is the name of the relation so prisma doesn't get confused and create a new table for this relationship.
+
+  @@map("pods")
 }
 
 model ChatGroup {

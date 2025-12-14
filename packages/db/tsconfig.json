@@ -4,27 +4,25 @@
     // File Layout
     "rootDir": "./src",
     "outDir": "./dist",
-
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "nodenext",
     "target": "es2023",
     "moduleResolution": "nodenext",
-    "types": ["node"], // Enable Node.js globals like `process`, `__dirname`, etc.
+    "types": [
+      "node"
+    ], // Enable Node.js globals like `process`, `__dirname`, etc.
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
     // and npm install -D @types/node
-
     // Other Outputs
     "sourceMap": true,
     "declaration": false,
     "declarationMap": false,
-
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
-
     // Style Options
     // "noImplicitReturns": true,
     // "noImplicitOverride": true,
@@ -32,11 +30,9 @@
     // "noUnusedParameters": true,
     // "noFallthroughCasesInSwitch": true,
     // "noPropertyAccessFromIndexSignature": true,
-
     // Recommended Options
     "strict": true,
     "jsx": "react-jsx",
-
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
@@ -44,5 +40,7 @@
   },
   // Only compile source files from src so that root-level config files like
   // prisma.config.ts are not treated as part of the TS program.
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }
