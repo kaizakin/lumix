@@ -1,6 +1,6 @@
 import { Server, Socket } from "socket.io";
 import redis from "../redis/redis.js";
-import prisma from "@repo/db";
+import { prisma } from "@repo/db";
 import type { ChatMessage, ChatMessageDBRecord, SendMessageData } from "@repo/types";
 
 
@@ -98,7 +98,7 @@ export function SetupSocket(io: Server): void {
                 })
 
                 if (!user) throw new Error(`User with email ${userInfo.email} not found`);
-                
+
                 //update message in DB.
                 const savedMessage = await prisma.chatMessage.create({
                     data: {
