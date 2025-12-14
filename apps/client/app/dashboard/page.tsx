@@ -1,20 +1,11 @@
 "use client";
 
 import { HoverEffect } from "@/components/ui/card-hover-effect";
-import { DottedLineChart } from "@/components/DottedLineChart";
 import { OnBoarding } from "@/components/OnBoarding";
 import VideoPlayer from "@/components/VideoPlayer";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
-  const chartData = [
-    { month: "January", value: 186 },
-    { month: "February", value: 305 },
-    { month: "March", value: 237 },
-    { month: "April", value: 73 },
-    { month: "May", value: 209 },
-    { month: "June", value: 214 },
-  ];
 
   return <div>
     <CardHoverEffect />
@@ -24,7 +15,6 @@ export default function Home() {
           <OnBoarding />
         </div>
         <div className="col-span-2">
-          <DottedLineChart chartData={chartData} />
         </div>
       </div>
     </div>
@@ -36,8 +26,8 @@ export default function Home() {
 function CardHoverEffect() {
   return (
     <div className="w-full mx-auto px-8">
-      <HoverEffect 
-        items={cards} 
+      <HoverEffect
+        items={cards}
         VideoPlayerComponent={VideoPlayer}
         ButtonComponent={Button}
       />

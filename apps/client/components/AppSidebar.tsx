@@ -25,6 +25,7 @@ import { useState } from "react";
 import type { JSX } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { JoinDiscordButton } from "./JoinDiscord";
+import { CreatePodDialog } from "./CreatePodDialog";
 
 
 const items = [
@@ -104,6 +105,9 @@ export function AppSidebar(): JSX.Element {
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarContent>
+                <div className="mb-5 mx-2 flex justify-center">
+                    <CreatePodDialog />
+                </div>
                 <SidebarGroup>
                     <SidebarGroupContent>
                         <SidebarMenu>
@@ -112,9 +116,6 @@ export function AppSidebar(): JSX.Element {
                                 <SidebarMenuSubItem className="max-h-60 cursor-pointer overflow-y-auto">
                                     <Pod image="https://media.tenor.com/sUOkoSh_yYAAAAAe/koopa-bah-bah.png" link="#" podName="The Gang"></Pod>
                                     <Pod image="https://media.tenor.com/sUOkoSh_yYAAAAAe/koopa-bah-bah.png" link="#" podName="Idea a projecto"></Pod>
-                                    <Pod image="https://media.tenor.com/sUOkoSh_yYAAAAAe/koopa-bah-bah.png" link="#" podName="Ini illaya"></Pod>
-                                    <Pod image="https://media.tenor.com/sUOkoSh_yYAAAAAe/koopa-bah-bah.png" link="#" podName="Hip Hop Adhi"></Pod>
-                                    <Pod image="https://media.tenor.com/sUOkoSh_yYAAAAAe/koopa-bah-bah.png" link="#" podName="TVK FTW"></Pod>
                                     <Pod image="https://media.tenor.com/sUOkoSh_yYAAAAAe/koopa-bah-bah.png" link="#" podName="bah bah black sheep"></Pod>
                                     <Pod image="https://media.tenor.com/sUOkoSh_yYAAAAAe/koopa-bah-bah.png" link="#" podName="The Gang"></Pod>
                                     <Pod image="https://media.tenor.com/sUOkoSh_yYAAAAAe/koopa-bah-bah.png" link="#" podName="The Gang"></Pod>

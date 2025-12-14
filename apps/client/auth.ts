@@ -9,6 +9,21 @@ const nextAuth = NextAuth({
     adapter: PrismaAdapter(prisma),
     session: { strategy: "jwt" },
     ...authConfig,
+    callbacks: {
+        ...authConfig.callbacks,
+        async session({ session, token }) {
+            if (token.sub && session.user) {
+                session.user.id = token.sub; // take the userid from jwttoken and store it in session
+            }
+            return session;
+        },
+        async jwt({ token, user }) {
+            if (user) {
+                token.sub = user.id; // take the userid given from prisma adapter and issue it in jwt
+            }
+            return token;
+        }
+    },
     providers: [
         GitHub,
         Google,
