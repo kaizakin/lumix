@@ -1,8 +1,8 @@
 import { auth } from "@/auth";
 import { prisma } from "@repo/db";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
         const session = await auth();
 
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
             return { pod, chatGroup };
         });
 
-        return NextResponse.json(result.pod);
+        return NextResponse.json(result);
     } catch (error) {
         console.error("Error creating pod:", error);
         return NextResponse.json(

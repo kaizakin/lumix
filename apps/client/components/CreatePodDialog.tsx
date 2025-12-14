@@ -20,6 +20,7 @@ export function CreatePodDialog() {
     const [title, setTitle] = useState("My Pod");
     const [isCreating, setIsCreating] = useState(false);
     const [description, setDescription] = useState("Project idea discussion");
+    const [open, setOpen] = useState(false);
 
     async function handleSubmit() {
         if (isCreating) return;
@@ -44,24 +45,26 @@ export function CreatePodDialog() {
                 toast.error("Error", {
                     description: data.error || "Failed to create pod please try again"
                 })
+                return;
             }
 
-            console.log(data)
+            console.log(data);
 
-            if (data) {
-                toast.success("Room created!", {
-                    description: `Room "${roomTitle}" has been created successfully.`
-                })
-            }
+            toast.success("Room created!", {
+                description: `Room "${roomTitle}" has been created successfully.`
+            })
+
+            setOpen(false);
 
         } catch (error) {
             console.error('Error creating room:', error);
+            toast.error(error as string);
         } finally {
             setIsCreating(false);
         }
     }
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <form>
                 <DialogTrigger asChild>
                     <Button variant="outline">Create Pod</Button>

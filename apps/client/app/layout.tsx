@@ -21,7 +21,7 @@ export default function RootLayout({ children, }: Readonly<{ children: React.Rea
       <body
         className={`${inter.className} ${MapleMono.variable} antialiased text-sm`}
       >
-        <Toaster/>
+        <Toaster position={"top-center"} />
         <SessionProvider>
           {children}
         </SessionProvider>

@@ -13,6 +13,7 @@ interface ChatInputAreaProps {
     setMessageText: React.Dispatch<React.SetStateAction<string>>,
     handleSendMessage: () => void,
     maxMessageLength: number
+    handleGif: (x: string)=> void
 }
 
 
@@ -20,7 +21,8 @@ export const ChatInputArea = ({
     messageText,
     setMessageText,
     handleSendMessage,
-    maxMessageLength
+    maxMessageLength,
+    handleGif
 }: ChatInputAreaProps) => {
 
     const [showEmojiPicker, setShowEmojiPicker] = useState(false)
@@ -42,6 +44,7 @@ export const ChatInputArea = ({
 
     function onEmojiClick(emoji: any) {
         setMessageText((prevText: string) => prevText + emoji.native);
+
         setShowEmojiPicker(false)
     }
 
@@ -101,7 +104,7 @@ export const ChatInputArea = ({
                                     <GifPicker
                                         tenorApiKey={process.env.NEXT_PUBLIC_TENOR_API_KEY || ''}
                                         onGifClick={(gif) => {
-                                            setMessageText(gif.url)
+                                            handleGif(gif.url)
                                             setShowGifPicker(false)
                                         }}
                                         width={280}
