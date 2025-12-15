@@ -2,6 +2,7 @@ import { ChatMessage } from "@repo/types"
 import { format } from "date-fns";
 import { ChatBubble, ChatBubbleAvatar, ChatBubbleMessage } from "../ui/chat-bubble";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface MessageItemProps {
     message: ChatMessage
@@ -15,6 +16,73 @@ export function MessageItem({ isOwn, message, sessionUserAvatar }: MessageItemPr
         if (!timestamp) return "";
         const date = new Date(timestamp);
         return format(date, "MMM d, h:mm a");
+    };
+
+    const isGifUrl = (url: string) => {
+        return url.includes('tenor.com') || url.includes('giphy.com');
+    }
+
+    const renderMessageContent = (content: string) => {
+        if (content.includes('http') && (content.includes('tenor.com') || content.includes('giphy.com'))) {
+            const urlMatch = content.match(/(https?:\/\/[^\s]+)/i);
+
+            if (urlMatch && isGifUrl(urlMatch[0])) {
+                const gifUrl = urlMatch[0];
+
+                const parts = content.split(gifUrl);
+                const beforeText = parts[0] || '';
+                const afterText = parts[1] || '';
+
+                if (!beforeText.trim() && !afterText.trim()) {
+                    return (
+                        <div className="flex justify-center items-center w-full overflow-hidden">
+                            <Image
+                                width={200}
+                                height={200}
+                                src={gifUrl}
+                                alt="GIF"
+                                className="w-full h-auto rounded-md"
+                                loading="lazy"
+                                style={{
+                                    minWidth: '220px',
+                                    maxHeight: '300px',
+                                    objectFit: 'contain',
+                                    display: 'block',
+                                    margin: 0
+                                }}
+                            />
+                        </div>
+                    );
+                }
+
+                // If there's text and a GIF
+                return (
+                    <>
+                        {beforeText}
+                        <div className="flex justify-center items-center w-full overflow-hidden my-1">
+                            <Image
+                                width={200}
+                                height={200}
+                                src={gifUrl}
+                                alt="GIF"
+                                className="w-full h-auto rounded-md"
+                                loading="lazy"
+                                style={{
+                                    minWidth: '220px',
+                                    maxHeight: '300px',
+                                    objectFit: 'contain',
+                                    display: 'block',
+                                    margin: 0
+                                }}
+                            />
+                        </div>
+                        {afterText}
+                    </>
+                );
+            }
+        }
+
+        return content;
     };
 
     return (
@@ -41,7 +109,7 @@ export function MessageItem({ isOwn, message, sessionUserAvatar }: MessageItemPr
                     {message.user?.email || 'Unknown User'}
                 </span>
                 <ChatBubbleMessage variant={isOwn ? "sent" : "received"}>
-                    {message.message}
+                    {renderMessageContent(message.message)}
                 </ChatBubbleMessage>
                 <span className={`text-xs text-muted-foreground mt-1 ${isOwn ? "self-end" : "self-start"}`}>
                     {formatMessageTime(message.createdAt)}

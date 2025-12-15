@@ -7,7 +7,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   transpilePackages: ["@repo/db"], // askinig next.js to custom transpile this user written package.
   images: {
-    domains: ["i.pravatar.cc", "media.tenor.com", "lh3.googleusercontent.com"],
+    domains: ["i.pravatar.cc", "media.tenor.com", "lh3.googleusercontent.com","avatars.githubusercontent.com"],
   }
 };
 

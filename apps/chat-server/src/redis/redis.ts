@@ -13,6 +13,7 @@ if (process.env.NODE_ENV == "production") {
         host: "localhost",
         port: 6379
     })
+    console.log("using localhost redis!");
 }
 
 export default redis;

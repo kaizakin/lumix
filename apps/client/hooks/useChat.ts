@@ -50,7 +50,7 @@ export function useChat(podId: string) {
         queryFn: async () => {
             return new Promise<ChatMessage[]>((resolve) => {
                 socket.current.emit("fetch_messages",
-                    { room: podId },
+                    { pod: podId },
                     (fetchedMessages: ChatMessage[]) => {
                         resolve(fetchedMessages);
                     }
@@ -68,7 +68,8 @@ export function useChat(podId: string) {
 
     useEffect(() => {
         function onNewMessage(message: ChatMessage) {
-            queryClient.setQueryData(['message', podId],
+            console.log("new message received")
+            queryClient.setQueryData(['messages', podId],
                 (oldData: ChatMessage[] | undefined) => {
                     if (!oldData) return [message]
 
@@ -124,7 +125,7 @@ export function useChat(podId: string) {
 
             const message = {
                 message: messageText,
-                room: podId,
+                pod: podId,
                 sender: session.data.user.id as string,
                 user: {
                     email: userEmail,

@@ -4,8 +4,6 @@ import { useState } from "react"
 import { ChatInputArea } from "./ChatInputArea"
 import { useChat } from "@/hooks/useChat";
 import { MessageList } from "./MessageList";
-import Image from "next/image";
-
 
 export const ChatBase = ({ podId }: { podId: string }) => {
     const [messageText, setMessageText] = useState("");
@@ -24,23 +22,7 @@ export const ChatBase = ({ podId }: { podId: string }) => {
 
     const handleGIF = (gifUrl: string) => {
         return (
-            sendMessage(<div className="flex justify-center items-center w-full overflow-hidden my-1">
-                <Image
-                    width={200}
-                    height={200}
-                    src={gifUrl}
-                    alt="GIF"
-                    className="w-full h-auto rounded-md"
-                    loading="lazy"
-                    style={{
-                        minWidth: '220px',
-                        maxHeight: '300px',
-                        objectFit: 'contain',
-                        display: 'block',
-                        margin: 0
-                    }}
-                />
-            </div>)
+            setMessageText(messageText + " " + gifUrl)
         )
     }
 

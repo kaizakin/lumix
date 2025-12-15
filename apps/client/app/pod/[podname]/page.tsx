@@ -9,7 +9,7 @@ function ChatPage(){
     return (
         <div className="flex flex-col h-full bg-background overflow-x-hidden">
             <main className="flex-1 overflow-hidden">
-                <ChatBase/>                
+                <ChatBase podId={"04d1fd3e-3c12-43ee-b4a2-7e4ec4383b1e"}/>                
             </main>
         </div>
     )

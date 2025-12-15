@@ -1,6 +1,7 @@
 import { PrismaClient } from './generated/prisma/client.js';
 import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
+import 'dotenv/config'
 
 const createPrismaClient = () => {
   // pool using the POOLED URL (DATABASE_URL)

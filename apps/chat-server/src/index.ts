@@ -5,6 +5,7 @@ import { createAdapter } from "@socket.io/redis-streams-adapter"
 import cors from "cors";
 import redis from './redis/redis.js';
 import { SetupSocket } from './socket/socket.js';
+import 'dotenv/config';
 
 const PORT = 8080;
 const app = express();

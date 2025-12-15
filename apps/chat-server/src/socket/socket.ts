@@ -36,7 +36,7 @@ async function getMessagesForPod(pod: string): Promise<ChatMessage[]> {
     try {
         const cached = await redis.get(cacheKey);
         if (cached) {
-            console.log(`Using cached messages for room: ${pod}`);
+            console.log(`Using redis cached messages for room: ${pod}`);
             return JSON.parse(cached) as ChatMessage[];
         }
         console.log(`Cache miss for room: ${pod}, fetching from DB`);
@@ -62,6 +62,7 @@ async function getMessagesForPod(pod: string): Promise<ChatMessage[]> {
 export function SetupSocket(io: Server): void {
     io.use((socket: CustomSocket, next) => {
         const pod = socket.handshake.auth.pod as string | undefined;
+        console.log(`Middleware: Auth pod: ${pod}`);
         if (pod) {
             socket.pod = pod;
         }

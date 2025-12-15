@@ -75,13 +75,13 @@ export function ChatBubbleAvatar({
   src,
   className,
 }: ChatBubbleAvatarProps) {
-  const safeImageSrc = src || "/avatar.png";
+  const safeImageSrc = src || "/monkey.jpg";
   
   return (
     <Avatar className={cn("h-8 w-8", className)}>
       <AvatarImage src={safeImageSrc} />
       <AvatarFallback>
-        <Image src="/avatar.png" alt="default avatar" width={200} height={200} />
+        <Image src="/monkey.jpg" alt="default avatar" width={200} height={200} />
       </AvatarFallback>
     </Avatar>
   )
