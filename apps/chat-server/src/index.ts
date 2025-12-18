@@ -7,7 +7,7 @@ import redis from './redis/redis.js';
 import { SetupSocket } from './socket/socket.js';
 import 'dotenv/config';
 
-const PORT = 8080;
+const PORT = 8081;
 const app = express();
 const server = createServer(app);
 

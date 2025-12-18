@@ -1,5 +1,5 @@
 
-import { signIn } from "@/auth"
+import { signIn, signOut } from "@/auth"
 
 export default function SignIn() {
   return (
@@ -19,6 +19,15 @@ export default function SignIn() {
         }}
       >
         <button type="submit">Signin with github</button>
+      </form>
+      <br/>
+      <form
+        action={async () => {
+          "use server"
+          await signOut()
+        }}
+      >
+        <button type="submit">SignOut</button>
       </form>
     </div>
   )
