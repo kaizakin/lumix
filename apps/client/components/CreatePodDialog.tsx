@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Plus } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -31,34 +32,40 @@ export function CreatePodDialog() {
             const roomTitle = title.trim();
             const roomDescription = description.trim();
 
-            const res = await fetch(`/api/pod`, {
+            const promise = fetch(`/api/pod`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ title: roomTitle, description: roomDescription })
+            }).then(async (res) => {
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.error || "Failed to create pod please try again"); // throw error and it's cathed by toast.promise
+                }
+
+                console.log(data);
+                return data;
             })
 
-            const data = await res.json();
+            toast.promise(promise,// toast.promise is  non blocking it sets up and the success runs after the promise resolves asynchronously
+                {
+                    loading: "Creating room",
+                    success: () => `${roomTitle} has been created`,// it's asynchronous
+                    error: (error) => error.message || "Error",
+                    action: {
+                        label: "Close",
+                        onClick: () => { },
+                    },
+                }
+            )
 
-            if (!res.ok) {
-                toast.error("Error", {
-                    description: data.error || "Failed to create pod please try again"
-                })
-                return;
-            }
-
-            console.log(data);
-
-            toast.success("Room created!", {
-                description: `Room "${roomTitle}" has been created successfully.`
-            })
-
+            await promise; // wait for the promise to resovle before closing.
             setOpen(false);
 
         } catch (error) {
             console.error('Error creating room:', error);
-            toast.error(error as string);
         } finally {
             setIsCreating(false);
         }
@@ -67,7 +74,10 @@ export function CreatePodDialog() {
         <Dialog open={open} onOpenChange={setOpen}>
             <form>
                 <DialogTrigger asChild>
-                    <Button variant="outline">Create Pod</Button>
+                    <Button className="bg-light1 hover:scale-105 transition-all cursor-pointer">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create Pod
+                    </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
