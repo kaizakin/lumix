@@ -25,7 +25,6 @@ import { useState } from "react";
 import type { JSX } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { JoinDiscordButton } from "./JoinDiscord";
-import { CreatePodDialog } from "./CreatePodDialog";
 
 
 const items = [
@@ -41,7 +40,7 @@ export function AppSidebar(): JSX.Element {
     const [open, setOpen] = useState(false);
     return (
         <>
-            <Sidebar variant="floating" collapsible="icon" className="outline-none">
+            <Sidebar variant="sidebar" collapsible="icon" className="outline-none">
                 <SidebarHeader>
                     <div className="flex gap-3">
                         <Image width={7} height={7} className="h-7 w-7" src="/lumixlogo.png" alt="Lumix" />
@@ -105,9 +104,6 @@ export function AppSidebar(): JSX.Element {
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarContent>
-                <div className="mb-5 mx-2 flex justify-center">
-                    <CreatePodDialog />
-                </div>
                 <SidebarGroup>
                     <SidebarGroupContent>
                         <SidebarMenu>

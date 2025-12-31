@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { MapleMono } from "@/style/font";
 import "@mdxeditor/editor/style.css";
@@ -8,7 +8,7 @@ import { Toaster } from "@/components/ui/sonner"
 
 
 
-const inter = Inter({ subsets: ["latin"] });
+const geist = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Lumix",
@@ -19,7 +19,7 @@ export default function RootLayout({ children, }: Readonly<{ children: React.Rea
   return (
     <html lang="en" className="dark">
       <body
-        className={`${inter.className} ${MapleMono.variable} antialiased text-sm`}
+        className={`${geist.className} ${MapleMono.variable} antialiased text-sm`}
       >
         <Toaster position={"top-center"} />
         <SessionProvider>

@@ -1,63 +1,45 @@
 "use client";
 
+import { DashboardHeader } from "@/components/DashboardHeader";
 import { HoverEffect } from "@/components/ui/card-hover-effect";
-import { OnBoarding } from "@/components/OnBoarding";
-import VideoPlayer from "@/components/VideoPlayer";
-import { Button } from "@/components/ui/button";
+import { IconBroadcast, IconCalendarDue, IconFileCheck, IconFileSad } from "@tabler/icons-react";
+import { PodGrid } from "@/components/PodGrid";
 
 export default function Home() {
-
-  return <div>
-    <CardHoverEffect />
-    <div className="mx-10">
-      <div className="h-full w-full sm:grid sm:grid-cols-3 flex flex-col gap-6 mb-10">
-        <div className="col-span-1 border-1 bg-card w-full h-full rounded-xl shadow-sm">
-          <OnBoarding />
-        </div>
-        <div className="col-span-2">
-        </div>
-      </div>
-    </div>
+  return <div className="mx-10 mb-5">
+    <DashboardHeader />
+    <HoverEffect items={cards} />
+    <PodGrid />
   </div>
 }
 
-
-
-function CardHoverEffect() {
-  return (
-    <div className="w-full mx-auto px-8">
-      <HoverEffect
-        items={cards}
-        VideoPlayerComponent={VideoPlayer}
-        ButtonComponent={Button}
-      />
-    </div>
-  );
-}
-
-export const cards = [
+const cards = [
   {
-    number: 1,
-    description: "A Pod, All your ideas and discussions",
-    buttonlabel: "Create a Pod",
-    path: "/videos/create_pod.mp4"
+    label: "Pending deadlines",
+    value: 12,
+    description: "+3 this week",
+    icon: IconCalendarDue,
+    color: "text-red-500",
   },
   {
-    number: 2,
-    description: "All your deadline Unified into a single place",
-    buttonlabel: "Go to Calendar",
-    path: "/videos/Calendar.mp4"
+    label: "Pods",
+    value: 48,
+    description: "Total Active pods",
+    icon: IconBroadcast,
+    color: "text-teal-400",
   },
   {
-    number: 3,
-    description: "Access all the shared materials",
-    buttonlabel: "Shared materials",
-    path: "/videos/Short_Video_of_Shared_Materials.mp4"
+    label: "Issues",
+    value: 7,
+    description: "Active issues",
+    icon: IconFileSad,
+    color: "text-orange-400",
   },
   {
-    number: 4,
-    description: "Invite friends to Lumix and start brainstorming",
-    buttonlabel: "Invite friends",
-    path: "/videos/Short_Video_of_Invite_Friends.mp4"
-  },
-];
+    label: "Completion rate",
+    value: 24,
+    description: "Total issues / completed issues",
+    icon: IconFileCheck,
+    color: "text-emerald-400",
+  }
+]

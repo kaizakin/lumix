@@ -4,12 +4,15 @@ import { Canvas } from "@/components/canvas/Canvas";
 import { ChatBase } from "@/components/chat/ChatBase";
 import { Resizable } from "@/components/Resizable";
 import { Tabenum, useTabStore } from "@/store/useTabStore";
+import { useParams } from "next/navigation";
 
-function ChatPage(){
+function ChatPage() {
+    const params = useParams();
+    const podid = params.podid as string;
     return (
         <div className="flex flex-col h-full bg-background overflow-x-hidden">
             <main className="flex-1 overflow-hidden">
-                <ChatBase podId={"04d1fd3e-3c12-43ee-b4a2-7e4ec4383b1e"}/>                
+                <ChatBase podId={podid} />
             </main>
         </div>
     )
@@ -17,8 +20,8 @@ function ChatPage(){
 
 const PodPage = () => {
     const tab = useTabStore((s) => s.currentTab);
-    if(tab == Tabenum.Storm) return <Resizable/>
-    if(tab == Tabenum.Scribble) return <Canvas/>
-    if(tab == Tabenum.Text) return <ChatPage/>
+    if (tab == Tabenum.Storm) return <Resizable />
+    if (tab == Tabenum.Scribble) return <Canvas />
+    if (tab == Tabenum.Text) return <ChatPage />
 }
 export default PodPage;

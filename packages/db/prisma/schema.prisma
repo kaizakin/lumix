@@ -81,6 +81,7 @@ model Pod {
   updatedAt   DateTime @updatedAt
   admin       User     @relation("PodAdmin", fields: [userId], references: [id], onDelete: Cascade)
   members     User[]   @relation("PodMembers") // this is the name of the relation so prisma doesn't get confused and create a new table for this relationship.
+  // inorder to reduce ambiguity to prisma give relation names explicitly to avoid errors.
 
   @@map("pods")
 }
