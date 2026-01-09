@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react"
 import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
-import { MoreVertical, Users } from "lucide-react"
+import { MoreVertical, Users, Search, Inbox } from "lucide-react"
 import { Card, CardContent } from "./ui/card"
 import { Avatar, AvatarFallback } from "./ui/avatar"
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation"
+import { Input } from "./ui/input"
 
 
 
@@ -23,18 +24,24 @@ type getPodsResponse = {
 export function PodGrid() {
     const [view, setView] = useState<"grid" | "list">("grid");
     const [podData, setPodData] = useState<getPodsResponse[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [searchFocused, setSearchFocused] = useState(false);
     const router = useRouter();
 
     async function fetchPods() {
+        setLoading(true);
         const res = await fetch("/api/getpods");
 
         if (!res.ok) {
             console.error("request failed:", res.status);
+            setLoading(false);
             return;
         }
 
         const data: { podData: getPodsResponse[] } = await res.json();
         setPodData(data.podData);
+        setLoading(false);
 
         console.log(data);
     }
@@ -61,43 +68,80 @@ export function PodGrid() {
         members: 6
     }))
 
+    const filteredPods = updatedPodData.filter(pod => 
+        pod.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        pod.description.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <h2 className="text-2xl font-bold">Your Pods</h2>
-                    <div className="flex bg-muted p-1 focus:outline-none">
-                        <Button
-                            variant={view === "grid" ? "secondary" : "ghost"}
-                            size="sm"
-                            className={`h-7 ${view === "grid" && "bg-teal2"} hover:bg-slate-400 text-xs`}
-                            onClick={() => setView("grid")}
-                        >
-                            Grid
+            <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <h2 className="text-2xl font-bold">Your Pods</h2>
+                        <div className="flex bg-muted p-1 focus:outline-none">
+                            <Button
+                                variant={view === "grid" ? "secondary" : "ghost"}
+                                size="sm"
+                                className={`h-7 ${view === "grid" && "bg-teal2"} hover:bg-slate-400 text-xs`}
+                                onClick={() => setView("grid")}
+                            >
+                                Grid
+                            </Button>
+                            <Button
+                                variant={view === "list" ? "secondary" : "ghost"}
+                                size="sm"
+                                className={`h-7 text-xs ${view === "list" && "bg-teal2"} hover:bg-slate-400`}
+                                onClick={() => setView("list")}
+                            >
+                                List
+                            </Button>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <Button variant="ghost" className="text-primary hover:text-primary hover:bg-primary/10">
+                            Created
                         </Button>
-                        <Button
-                            variant={view === "list" ? "secondary" : "ghost"}
-                            size="sm"
-                            className={`h-7 text-xs ${view === "list" && "bg-teal2"} hover:bg-slate-400`}
-                            onClick={() => setView("list")}
-                        >
-                            List
+                        <Button variant="ghost" className="text-primary hover:text-primary hover:bg-primary/10">
+                            Joined
                         </Button>
                     </div>
                 </div>
-                <div className="flex items-center gap-1">
-                    <Button variant="ghost" className="text-primary hover:text-primary hover:bg-primary/10">
-                        Created
-                    </Button>
-                    <Button variant="ghost" className="text-primary hover:text-primary hover:bg-primary/10">
-                        Joined
-                    </Button>
-                </div>
+
+                {podData.length > 0 && (
+                    <div className={`relative transition-all duration-300 ease-out ${searchFocused ? 'scale-y-100' : 'scale-y-95 origin-top'}`}>
+                        <Search className="absolute left-3 h-4 w-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <Input 
+                            placeholder="Search pods..." 
+                            className="pl-9 w-full rounded-none" 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onFocus={() => setSearchFocused(true)}
+                            onBlur={() => setSearchFocused(false)}
+                        />
+                    </div>
+                )}
             </div>
 
-            {view === "grid" ? (
+            {loading ? (
+                <div className="flex items-center justify-center py-12">
+                    <p className="text-muted-foreground">Loading pods...</p>
+                </div>
+            ) : podData.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <Inbox className="h-12 w-12 text-muted-foreground/50 mb-3" />
+                    <h3 className="text-lg font-semibold text-foreground mb-1">No Pods Created</h3>
+                    <p className="text-sm text-muted-foreground mb-4">Get started by creating your first pod for collaborative brainstorming</p>
+                </div>
+            ) : filteredPods.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <Search className="h-12 w-12 text-muted-foreground/50 mb-3" />
+                    <h3 className="text-lg font-semibold text-foreground mb-1">No Pods Found</h3>
+                    <p className="text-sm text-muted-foreground">Try adjusting your search query</p>
+                </div>
+            ) : view === "grid" ? (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {updatedPodData.map((pod, index) => (
+                    {filteredPods.map((pod, index) => (
                         <Card
                             key={pod.id}
                             className="group relative rounded-none overflow-hidden border-border bg-card transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10 cursor-pointer animate-in fade-in slide-in-from-bottom-4"
@@ -172,7 +216,7 @@ export function PodGrid() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border/50">
-                                {updatedPodData.map((pod) => (
+                                {filteredPods.map((pod) => (
                                     <tr key={pod.id} className="hover:bg-muted/30 transition-colors group">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">

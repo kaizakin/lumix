@@ -1,5 +1,4 @@
-import { Bell, Search } from "lucide-react"
-import { Input } from "./ui/input"
+import { Bell } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
@@ -10,24 +9,22 @@ export const DashboardHeader = () => {
     const [notificationCount] = useState(3);
 
     return (
-        <div className="flex h-20 items-center justify-between">
-            <div>
-                <span className="text-white text-3xl font-bold">Welcome back to </span><span className="text-light1 text-3xl font-semibold">Lumix</span>
-                <p className="text-light1 text-sm font-semibold">Your collaborative workspace for realtime brainstorming</p>
-            </div>
-            <div className="flex gap-4">
-                <div className="relative hidden md:block">
-                    <Search className="absolute left-3 h-4 w-4 top-1/2 -translate-y-1/2" />
-                    <Input placeholder="Search pods..." className="pl-9 w-[250px] focus:w-[300px] transition-all rounded-none" />
+        <div className="flex flex-col md:flex-row gap-4 md:gap-0 md:h-20 md:items-center md:justify-between py-4 md:py-0">
+            <div className="flex-1">
+                <div className="flex flex-wrap items-center gap-1">
+                    <span className="text-white text-xl sm:text-2xl md:text-3xl font-bold">Welcome back to </span><span className="text-light1 text-xl sm:text-2xl md:text-3xl font-semibold">Lumix</span>
                 </div>
+                <p className="text-light1 text-xs sm:text-sm font-semibold mt-2 md:mt-0">Your collaborative workspace for realtime brainstorming</p>
+            </div>
+            <div className="flex gap-2 md:gap-4 items-center flex-shrink-0">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button
                             variant="outline"
                             size="icon"
-                            className="relative bg-card transition-all hover:bg-light1"
+                            className="relative bg-card transition-all hover:bg-light1 h-9 w-9 md:h-10 md:w-10"
                         >
-                            <Bell className="h-5 w-5" />
+                            <Bell className="h-4 w-4 md:h-5 md:w-5" />
                             {notificationCount > 0 && (
                                 <Badge
                                     variant="destructive"
@@ -38,33 +35,33 @@ export const DashboardHeader = () => {
                             )}
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-80">
+                    <DropdownMenuContent align="end" className="w-72 sm:w-80">
                         <DropdownMenuLabel>Notifications</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
                             <div className="flex items-center gap-2">
                                 <div className="h-2 w-2 rounded-full bg-primary" />
-                                <span className="font-medium">New member joined Pod Alpha</span>
+                                <span className="font-medium text-xs sm:text-sm">New member joined Pod Alpha</span>
                             </div>
                             <span className="text-xs text-muted-foreground">2 minutes ago</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
                             <div className="flex items-center gap-2">
                                 <div className="h-2 w-2 rounded-full bg-primary" />
-                                <span className="font-medium">Deadline approaching: Q4 Review</span>
+                                <span className="font-medium text-xs sm:text-sm">Deadline approaching: Q4 Review</span>
                             </div>
                             <span className="text-xs text-muted-foreground">1 hour ago</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
                             <div className="flex items-center gap-2">
                                 <div className="h-2 w-2 rounded-full bg-primary" />
-                                <span className="font-medium">5 new files shared in Design Pod</span>
+                                <span className="font-medium text-xs sm:text-sm">5 new files shared in Design Pod</span>
                             </div>
                             <span className="text-xs text-muted-foreground">3 hours ago</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-            <CreatePodDialog/>
+                <CreatePodDialog/>
             </div>
         </div>
     )

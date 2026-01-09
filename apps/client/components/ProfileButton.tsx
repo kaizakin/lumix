@@ -13,7 +13,7 @@ export function SidebarProfile(): JSX.Element {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="w-full px-2 overflow-hidden justify-center py-1 cursor-pointer rounded-md focus:outline-none hover:bg-gray-200/40">
+        <Button variant="ghost" className="w-full px-2 overflow-hidden justify-center py-1 cursor-pointer focus:outline-none hover:bg-sidebar-accent">
           <Avatar className="h-8 w-8">
             <AvatarImage src="https://github.com/shadcn.png" alt="User avatar" />
             <AvatarFallback>SC</AvatarFallback>
@@ -29,7 +29,6 @@ export function SidebarProfile(): JSX.Element {
       <DropdownMenuContent align="end" className="w-max" side="right">
         {/* <DropdownMenuItem className="p-2 flex cursor-pointer">Upgrade to Pro</DropdownMenuItem> */}
         <DropdownMenuItem className="p-2 flex cursor-pointer"><Settings />Account</DropdownMenuItem>
-        <DropdownMenuItem className="p-2 flex cursor-pointer"><Bell />Notifications</DropdownMenuItem>
         <DropdownMenuItem className="p-2 flex cursor-pointer" onClick={() => signOut()}><LogOut />Log out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

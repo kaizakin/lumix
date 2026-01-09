@@ -6,7 +6,7 @@ import { IconBroadcast, IconCalendarDue, IconFileCheck, IconFileSad } from "@tab
 import { PodGrid } from "@/components/PodGrid";
 
 export default function Home() {
-  return <div className="mx-10 mb-5">
+  return <div className="mx-4 sm:mx-6 md:mx-10 mb-5">
     <DashboardHeader />
     <HoverEffect items={cards} />
     <PodGrid />

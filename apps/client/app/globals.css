@@ -236,4 +236,6 @@
   --color-light2: #7E7E7E;
   --color-teal1: #016B61; /*dark teal*/
   --color-teal2: #05998c; /*less teal*/
+  --color-teal3: #0a7a73; /*medium-light teal for hover*/
+  --color-teal-light: #0db8a6; /*light teal for header hover*/
 }
