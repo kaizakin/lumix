@@ -19,11 +19,11 @@
   "devDependencies": {
     "@types/node": "^20.19.19",
     "@types/pg": "^8.15.6",
-    "prisma": "^7.0.0"
+    "prisma": "^7.2.0"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.1.0",
-    "@prisma/client": "^7.0.0",
+    "@prisma/client": "^7.2.0",
     "dotenv": "^17.2.3",
     "pg": "^8.16.3"
   },

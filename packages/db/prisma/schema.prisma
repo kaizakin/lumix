@@ -7,6 +7,7 @@
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
+  moduleFormat = "esm" // a error in prisma v7 zeptomatch internal dep requiring esm only.
 }
 
 datasource db {
@@ -68,6 +69,7 @@ model User {
   sessions      Session[]
   createdPods   Pod[]         @relation("PodAdmin") // one to many relationship
   joinedPods    Pod[]         @relation("PodMembers") // many to many relationship
+  invites       Invite[]
 
   @@map("users") // name of this table in db is users.
 }
@@ -82,6 +84,7 @@ model Pod {
   admin       User     @relation("PodAdmin", fields: [userId], references: [id], onDelete: Cascade)
   members     User[]   @relation("PodMembers") // this is the name of the relation so prisma doesn't get confused and create a new table for this relationship.
   // inorder to reduce ambiguity to prisma give relation names explicitly to avoid errors.
+  invite      Invite?
 
   @@map("pods")
 }
@@ -111,4 +114,19 @@ model ChatMessage {
   chatGroup   ChatGroup @relation(fields: [chatGroupId], references: [id], onDelete: Cascade)
 
   @@map("chat_messages")
+}
+
+model Invite{
+  id          String @id @default(uuid()) @db.Uuid
+  code        String @unique @db.VarChar(100)
+  podID       String @map("pod_id") @db.Uuid @unique
+  creatorId   String @db.Uuid @map("creator_id")
+  expiresAt   DateTime 
+  maxUses     Int    @default(10)
+  useCount    Int    @default(0)
+
+  pod         Pod    @relation(fields: [podID], references: [id], onDelete: Cascade)
+  creator     User   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@map("invites")
 }
