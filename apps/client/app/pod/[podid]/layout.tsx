@@ -11,15 +11,19 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { SwitchPanes } from "@/components/SwitchPanes";
 import { useTabStore } from "@/store/useTabStore";
 import { Tabenum } from "@/store/useTabStore";
+import { createJoinCode } from "@/actions/CreateJoinCode";
+import { useParams } from "next/navigation";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
-    // const params = useParams();
-    // const podname = params.podname as string;
+    const params = useParams();
+    const podId = params.podId as string;
     const tab = useTabStore((s) => s.currentTab);
     const isMobile = useIsMobile();
     const [iscameraOn, setIscamerOn] = useState(false);
     const [isMicOn, setIsMicOn] = useState(false);
     const [isSidebarOpen, setIsSideBarOpen] = useState(false);
+    const [code, setCode] = useState("Wait");
+
     return <div className="min-h-screen max-h-screen flex flex-col max-w-screen bg-background text-foreground">
         <header className="border-b border-border bg-card/10 backdrop-blur-sm">
             <div className="flex items-center justify-between px-6 py-2">
@@ -74,6 +78,16 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                             >
                                 <Share2 />Share screen
                             </Button>
+                            <Button
+                                variant={"outline"}
+                                onClick={async () => {
+                                    const res = await createJoinCode(podId)
+                                    setCode(res.code as string);
+                                }}
+                            >
+                                Create join code
+                            </Button>
+                            <span>{code}</span>
                         </div>
                     </div>
                 </>)}

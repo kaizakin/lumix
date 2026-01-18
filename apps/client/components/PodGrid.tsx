@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from "./ui/avatar"
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation"
 import { Input } from "./ui/input"
+import { Spinner } from "./ui/spinner";
 
 
 
@@ -68,7 +69,7 @@ export function PodGrid() {
         members: 6
     }))
 
-    const filteredPods = updatedPodData.filter(pod => 
+    const filteredPods = updatedPodData.filter(pod =>
         pod.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         pod.description.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -111,9 +112,9 @@ export function PodGrid() {
                 {podData.length > 0 && (
                     <div className={`relative transition-all duration-300 ease-out ${searchFocused ? 'scale-y-100' : 'scale-y-95 origin-top'}`}>
                         <Search className="absolute left-3 h-4 w-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                        <Input 
-                            placeholder="Search pods..." 
-                            className="pl-9 w-full rounded-none" 
+                        <Input
+                            placeholder="Search pods..."
+                            className="pl-9 w-full rounded-none"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onFocus={() => setSearchFocused(true)}
@@ -125,7 +126,7 @@ export function PodGrid() {
 
             {loading ? (
                 <div className="flex items-center justify-center py-12">
-                    <p className="text-muted-foreground">Loading pods...</p>
+                    <Spinner />
                 </div>
             ) : podData.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">

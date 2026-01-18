@@ -239,3 +239,60 @@
   --color-teal3: #0a7a73; /*medium-light teal for hover*/
   --color-teal-light: #0db8a6; /*light teal for header hover*/
 }
+
+/* ===== 3D Spinner ===== */
+
+.spinner {
+  position: relative;
+  transform-style: preserve-3d;
+  perspective: 800px;
+  animation: spinner-rotate 1.2s linear infinite;
+}
+
+.spinner > div {
+  position: absolute;
+  inset: 0;
+  background: "";
+  border: 2px solid #016B61;
+  opacity: 0.85;
+  border-radius: 4px;
+}
+
+/* Front */
+.spinner > div:nth-child(6) {
+  transform: translateZ(var(--z));
+}
+
+/* Back */
+.spinner > div:nth-child(1) {
+  transform: rotateY(180deg) translateZ(var(--z));
+}
+
+/* Right */
+.spinner > div:nth-child(2) {
+  transform: rotateY(90deg) translateZ(var(--z));
+}
+
+/* Left */
+.spinner > div:nth-child(3) {
+  transform: rotateY(-90deg) translateZ(var(--z));
+}
+
+/* Top */
+.spinner > div:nth-child(4) {
+  transform: rotateX(90deg) translateZ(var(--z));
+}
+
+/* Bottom */
+.spinner > div:nth-child(5) {
+  transform: rotateX(-90deg) translateZ(var(--z));
+}
+
+@keyframes spinner-rotate {
+  from {
+    transform: rotateX(0deg) rotateY(0deg);
+  }
+  to {
+    transform: rotateX(360deg) rotateY(360deg);
+  }
+}

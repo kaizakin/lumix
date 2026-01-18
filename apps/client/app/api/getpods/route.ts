@@ -16,7 +16,6 @@ export async function GET() {
             where: { userId }
         });
 
-        console.log("poddata", podData);
 
         return NextResponse.json({ podData });
 

@@ -121,7 +121,7 @@ model Invite{
   code        String @unique @db.VarChar(100)
   podID       String @map("pod_id") @db.Uuid @unique
   creatorId   String @db.Uuid @map("creator_id")
-  expiresAt   DateTime 
+  // expiresAt   DateTime 
   maxUses     Int    @default(10)
   useCount    Int    @default(0)
 
