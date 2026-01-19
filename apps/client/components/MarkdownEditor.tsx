@@ -1,103 +1,45 @@
-"use client";
-import dynamic from "next/dynamic";
-import { useState } from "react";
+import React from "react";
+import { Editor, rootCtx, defaultValueCtx } from "@milkdown/kit/core";
+import { commonmark } from "@milkdown/kit/preset/commonmark";
+import { history, historyKeymap } from "@milkdown/kit/plugin/history";
+import { Milkdown, MilkdownProvider, useEditor } from "@milkdown/react";
+import { nord } from "@milkdown/theme-nord";
+import "@milkdown/theme-nord/style.css";
 
-// MDXEditor needs client-side loading
-const MDXEditor = dynamic(
-  () => import("@mdxeditor/editor").then((mod) => mod.MDXEditor),
-  { ssr: false }
+const DEFAULT_TEXT = `# Welcome to the editor
+
+- Start typing to see the Nord theme
+- Content will scroll when it grows
+- Undo (Ctrl/Cmd+Z), Redo (Ctrl/Cmd+Y)
+`;
+
+const MilkdownEditor: React.FC = () => {
+  useEditor((root) =>
+    Editor.make()
+      .config((ctx) => {
+        nord(ctx);
+        ctx.set(rootCtx, root);
+        ctx.set(defaultValueCtx, DEFAULT_TEXT);
+        ctx.set(historyKeymap.key, {
+          Undo: { shortcuts: "Mod-z" },
+          Redo: { shortcuts: ["Mod-y", "Shift-Mod-z"] },
+        });
+      })
+      .use(commonmark)
+      .use(history)
+  );
+
+  return (
+    // <div className="rounded border border-neutral-700 bg-[#2e3440] p-3">
+    // <div className="min-h-75 max-h-150 overflow-y-auto">
+    <Milkdown />
+    // </div>
+    // </div>
+  );
+};
+
+export const MarkdownEditor: React.FC = () => (
+  <MilkdownProvider>
+    <MilkdownEditor />
+  </MilkdownProvider>
 );
-
-// Import plugins and toolbar components
-import {
-  headingsPlugin,
-  listsPlugin,
-  quotePlugin,
-  linkPlugin,
-  tablePlugin,
-  thematicBreakPlugin,
-  markdownShortcutPlugin,
-  toolbarPlugin,
-  diffSourcePlugin,
-  codeBlockPlugin,
-  codeMirrorPlugin,
-  UndoRedo,
-  BoldItalicUnderlineToggles,
-  InsertTable,
-  DiffSourceToggleWrapper,
-  imagePlugin,
-  InsertImage,
-  sandpackPlugin,
-} from "@mdxeditor/editor";
-
-export function MarkdownEditor() {
-  const [markdown, setMarkdown] = useState<string>("### Start brainstorming now\n\nWrite your ideas here...");
-
-  return (
-    <div className="relative h-full w-full flex flex-col overflow-hidden">
-      <div className="flex-1 min-h-0 overflow-hidden relative">
-        <MDXNoteEditor
-          markdown={markdown}
-          onChange={setMarkdown}
-        />
-      </div>
-    </div>
-  );
-}
-
-function MDXNoteEditor({
-  markdown,
-  onChange,
-}: {
-  markdown: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <div className="h-full w-full flex flex-col  overflow-auto scrollbar-custom-thin">
-      <MDXEditor
-        markdown={markdown}
-        onChange={onChange}
-        className="dark-editor dark-theme"
-        plugins={[
-          toolbarPlugin({
-            toolbarContents: () => (
-              <DiffSourceToggleWrapper>
-                <UndoRedo />
-                <BoldItalicUnderlineToggles />
-                <InsertTable />
-                <InsertImage />
-              </DiffSourceToggleWrapper>
-            ),
-          }),
-          headingsPlugin({ allowedHeadingLevels: [1, 2, 3, 4, 5, 6] }),
-          listsPlugin(),
-          quotePlugin(),
-          linkPlugin(),
-          tablePlugin(),
-          imagePlugin(),
-          thematicBreakPlugin(),
-          sandpackPlugin(),
-          codeBlockPlugin({ defaultCodeBlockLanguage: 'txt' }),
-          codeMirrorPlugin({
-            codeBlockLanguages: {
-              js: 'JavaScript',
-              ts: 'TypeScript',
-              jsx: 'JSX',
-              tsx: 'TSX',
-              css: 'CSS',
-              html: 'HTML',
-              json: 'JSON',
-              md: 'Markdown',
-              py: 'Python',
-              sh: 'Shell',
-              txt: 'Plain Text'
-            }
-          }),
-          markdownShortcutPlugin(),
-          diffSourcePlugin({ viewMode: 'rich-text', diffMarkdown: '' }),
-        ]}
-        contentEditableClassName="prose prose-invert max-w-none text-sm bg-black focus:outline-none min-h-full p-4"
-      />
-    </div>
-  );
-}

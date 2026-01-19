@@ -35,7 +35,7 @@ export function Toolbar({ selectedTool, onToolChange }: ToolbarProps) {
     <div className="w-full h-10 flex justify-center mt-2">
       <div
         ref={containerRef}
-        className="relative flex w-max items-center justify-between bg-card p-3 border rounded-md"
+        className="relative flex w-max items-center justify-between bg-card p-3 border border-slate-800 rounded-md"
       >
         <Button
           variant={"ghost"}

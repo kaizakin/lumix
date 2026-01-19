@@ -9,10 +9,10 @@ export function Resizable() {
     return (
         <ResizablePanelGroup
             direction="horizontal"
-            className="h-full w-full rounded-md border"
+            className="h-full w-full border-none"
         >
             <ResizablePanel defaultSize={50} className="min-h-0 overflow-hidden">
-                <div className="h-full w-full overflow-hidden">
+                <div className="h-full w-full overflow-auto p-3 scrollbar-custom-thin">
                     <MarkdownEditor />
                 </div>
             </ResizablePanel>

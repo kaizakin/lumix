@@ -147,7 +147,7 @@
   --font-maple: var(--font-maple);
 }
 
-.prose {
+/* .prose {
   font-family: var(--font-maple), sans-serif;
 }
 
@@ -157,7 +157,6 @@
 
 
 .dark-editor {
-  /* ACCENT — Obsidian’s signature purple */
   --accentBase: #1e1e1e;
   --accentBgSubtle: #2b2b2b;
   --accentBg: #2b2b2b;
@@ -174,7 +173,6 @@
   --accentText: #dadada;
   --accentTextContrast: #1e1e1e;
 
-  /* BASE — Core background and panels */
   --baseBase: #1e1e1e;
   --baseBgSubtle: #242424;
   --baseBg: #2b2b2b;
@@ -191,7 +189,6 @@
   --baseText: #dadada;
   --baseTextContrast: #1e1e1e;
 
-  /* ADMONITION COLORS (Obsidian-ish, muted) */
   --admonitionTipBg: #22333b;
   --admonitionTipBorder: #3a6872;
 
@@ -226,7 +223,7 @@
   color: #ffffff;
   --basePageBg: black;
   background: #000000;
-}
+} */
 
 @theme {
   --color-dark1: #191919;

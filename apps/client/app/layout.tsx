@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "@milkdown/theme-nord/style.css";
 import { MapleMono } from "@/style/font";
-import "@mdxeditor/editor/style.css";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "@/components/ui/sonner"
 

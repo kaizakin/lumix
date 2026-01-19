@@ -56,7 +56,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                         {children}
                     </div>
 
-                    <div className="border border-t p-2 flex h-73px">
+                    <div className="border-t border-slate-800 p-2 flex h-73px">
                         <div className="flex items-center justify-end w-full h-full gap-2 ">
                             <Button variant={isMicOn ? "default" : "destructive"}
                                 size={"sm"}

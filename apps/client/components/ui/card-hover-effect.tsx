@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Icon, IconProps } from "@tabler/icons-react";
+import { IconProps } from "@tabler/icons-react";
 import { AnimatePresence, motion } from "motion/react";
 
 import { ForwardRefExoticComponent, RefAttributes, useEffect, useState } from "react";
@@ -12,13 +12,13 @@ export const HoverEffect = ({
     label: string;
     value: number;
     description: string;
-    icon: ForwardRefExoticComponent<IconProps & RefAttributes<Icon>>;
+    icon: ForwardRefExoticComponent<IconProps & RefAttributes<SVGSVGElement>>;
     color: string;
 
   }[];
   className?: string;
 }) => {
-  let [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
     <div
@@ -88,7 +88,7 @@ export const Card = ({
   return (
     <div
       className={cn(
-        "h-full w-full p-1 overflow-hidden rounded-sm bg-dark2 border-1 hover:border-light1/50 relative z-20",
+        "h-full w-full p-1 overflow-hidden rounded-sm bg-dark2 border hover:border-light1/50 relative z-20",
         className
       )}
     >
