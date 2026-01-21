@@ -11,7 +11,7 @@ export const asimovian = localFont({
 });
 
 export const MapleMono = localFont({
-  src:[
+  src: [
     {
       path: "../public/MapleMono-LightItalic.ttf",
       weight: "400",
@@ -19,4 +19,20 @@ export const MapleMono = localFont({
     }
   ],
   variable: "--font-maple"
+})
+
+export const euclid = localFont({
+  src: [
+    {
+      path: "../public/Euclid-Circular-B-Regular.ttf",
+      weight: "400",
+      style: "normal"
+    },
+    {
+      path: "../public/Euclid-Circular-B-Bold.ttf",
+      weight: "700",
+      style: "normal"
+    },
+  ],
+  variable: "--font-euclid"
 })
