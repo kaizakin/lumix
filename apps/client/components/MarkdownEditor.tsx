@@ -1,16 +1,50 @@
 import React from "react";
 import { Editor, rootCtx, defaultValueCtx } from "@milkdown/kit/core";
 import { commonmark } from "@milkdown/kit/preset/commonmark";
+import { gfm } from "@milkdown/kit/preset/gfm";
 import { history, historyKeymap } from "@milkdown/kit/plugin/history";
+import { clipboard } from "@milkdown/kit/plugin/clipboard";
+import { cursor } from '@milkdown/kit/plugin/cursor'
 import { Milkdown, MilkdownProvider, useEditor } from "@milkdown/react";
 import { nord } from "@milkdown/theme-nord";
-import "@milkdown/theme-nord/style.css";
+import { indent } from '@milkdown/kit/plugin/indent'
+import "@milkdown/theme-nord/style.css"
+import { listener, listenerCtx } from '@milkdown/kit/plugin/listener';
 
-const DEFAULT_TEXT = `# Welcome to the editor
 
-- Start typing to see the Nord theme
-- Content will scroll when it grows
-- Undo (Ctrl/Cmd+Z), Redo (Ctrl/Cmd+Y)
+const DEFAULT_TEXT = `# Welcome to your Markdown Editor
+
+This editor is powered by **Milkdown**. It supports CommonMark and GFM.
+
+## Features
+
+-   **Rich Text Styling**: *Italic*, **Bold**, ~~Strikethrough~~
+-   **Lists**:
+    - item1
+    - item2 
+
+<br/>
+
+1. Numbered lists
+    1. item1
+    2. item2
+
+<br/>
+
+-   **Code Blocks**:
+
+\`\`\`typescript
+const greeting = "Hello, World!";
+console.log(greeting);
+\`\`\`
+
+<br/>
+
+> "The best way to predict the future is to create it." - Peter Drucker
+
+<br/>
+
+Start capturing your ideas here!
 `;
 
 const MilkdownEditor: React.FC = () => {
@@ -24,17 +58,21 @@ const MilkdownEditor: React.FC = () => {
           Undo: { shortcuts: "Mod-z" },
           Redo: { shortcuts: ["Mod-y", "Shift-Mod-z"] },
         });
+        ctx.get(listenerCtx).markdownUpdated((ctx, markdown, prevMarkdown) => {
+          // console.log(markdown);
+        });
       })
       .use(commonmark)
+      .use(gfm)
       .use(history)
+      .use(clipboard)
+      .use(cursor)
+      .use(indent)
+      .use(listener)
   );
 
   return (
-    // <div className="rounded border border-neutral-700 bg-[#2e3440] p-3">
-    // <div className="min-h-75 max-h-150 overflow-y-auto">
-    <Milkdown />
-    // </div>
-    // </div>
+      <Milkdown />
   );
 };
 

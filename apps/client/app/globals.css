@@ -147,91 +147,13 @@
   --font-maple: var(--font-maple);
 }
 
-/* .prose {
-  font-family: var(--font-maple), sans-serif;
-}
-
-.prose strong {
-  font-weight: 400;
-}
-
-
-.dark-editor {
-  --accentBase: #1e1e1e;
-  --accentBgSubtle: #2b2b2b;
-  --accentBg: #2b2b2b;
-  --accentBgHover: #3a3a3a;
-  --accentBgActive: #3f3f3f;
-
-  --accentLine: #3f3f3f;
-  --accentBorder: #4a4a4a;
-  --accentBorderHover: #5a5a5a;
-
-  --accentSolid: #a277ff;
-  --accentSolidHover: #c4a3ff;
-
-  --accentText: #dadada;
-  --accentTextContrast: #1e1e1e;
-
-  --baseBase: #1e1e1e;
-  --baseBgSubtle: #242424;
-  --baseBg: #2b2b2b;
-  --baseBgHover: #3a3a3a;
-  --baseBgActive: #3f3f3f;
-
-  --baseLine: #3f3f3f;
-  --baseBorder: #4a4a4a;
-  --baseBorderHover: #5a5a5a;
-
-  --baseSolid: #343434;
-  --baseSolidHover: #3a3a3a;
-
-  --baseText: #dadada;
-  --baseTextContrast: #1e1e1e;
-
-  --admonitionTipBg: #22333b;
-  --admonitionTipBorder: #3a6872;
-
-  --admonitionInfoBg: #1f2e42;
-  --admonitionInfoBorder: #33507b;
-
-  --admonitionCautionBg: #3f2f1b;
-  --admonitionCautionBorder: #6f5122;
-
-  --admonitionDangerBg: #3b1e1e;
-  --admonitionDangerBorder: #6f2b2b;
-
-  --admonitionNoteBg: #2b2b2b;
-  --admonitionNoteBorder: #4a4a4a;
-
-  font-family:
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    Oxygen,
-    Ubuntu,
-    Cantarell,
-    "Open Sans",
-    "Helvetica Neue",
-    sans-serif;
-  --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
-
-  color: #ffffff;
-  --basePageBg: black;
-  background: #000000;
-} */
-
 @theme {
   --color-dark1: #191919;
   --color-dark2: #222122;
   --color-dark3: #464646;
-  --color-light1: #B1B1B1;
-  --color-light2: #7E7E7E;
-  --color-teal1: #016B61; /*dark teal*/
+  --color-light1: #b1b1b1;
+  --color-light2: #7e7e7e;
+  --color-teal1: #016b61; /*dark teal*/
   --color-teal2: #05998c; /*less teal*/
   --color-teal3: #0a7a73; /*medium-light teal for hover*/
   --color-teal-light: #0db8a6; /*light teal for header hover*/
@@ -250,7 +172,7 @@
   position: absolute;
   inset: 0;
   background: "";
-  border: 2px solid #016B61;
+  border: 2px solid #016b61;
   opacity: 0.85;
   border-radius: 4px;
 }

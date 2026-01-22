@@ -49,7 +49,7 @@ export const ChatInputArea = ({
     }
 
     return (
-        <div className="border-t border-border p-2 mt-auto bg-background z-10">
+        <div className="border-t border-border p-2 mt-auto bg-black z-10">
             <div className="flex flex-col gap-1">
                 <div className="flex gap-2">
                     <div className="flex-1 relative">

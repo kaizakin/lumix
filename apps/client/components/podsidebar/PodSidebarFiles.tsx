@@ -74,7 +74,7 @@ export const PodSidebarFiles = () => {
                 Shared files
             </h1>
             <Button
-                className="space-x-2 flex items-center cursor-pointer hover:bg-green-400/50"
+                className="space-x-2 flex items-center cursor-pointer hover:bg-teal-400/50"
                 variant="outline"
             >
                 <Upload />

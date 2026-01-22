@@ -22,14 +22,14 @@ export const ChatBase = ({ podId }: { podId: string }) => {
 
     const handleGIF = (gifUrl: string) => {
         return (
-            setMessageText(messageText + " " + gifUrl)
+            sendMessage(gifUrl)
         )
     }
 
     return (
-        <div className="h-full flex flex-col overflow-x-hidden overflow-y-hidden">
+        <div className="h-full flex flex-col overflow-x-hidden overflow-y-hidden bg-black">
             <MessageList messages={messages} />
-            <ChatInputArea messageText={messageText} setMessageText={setMessageText} handleSendMessage={handleSendMessage} maxMessageLength={MAX_MESSAGE_LENGTH} handleGif={handleGIF}/>
+            <ChatInputArea messageText={messageText} setMessageText={setMessageText} handleSendMessage={handleSendMessage} maxMessageLength={MAX_MESSAGE_LENGTH} handleGif={handleGIF} />
         </div>
     )
 }

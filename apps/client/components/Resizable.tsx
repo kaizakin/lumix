@@ -12,7 +12,7 @@ export function Resizable() {
             className="h-full w-full border-none"
         >
             <ResizablePanel defaultSize={50} className="min-h-0 overflow-hidden">
-                <div className="h-full w-full overflow-auto p-3 scrollbar-custom-thin">
+                <div className="h-full w-full overflow-auto p-3 scrollbar-custom-thin font-serif">
                     <MarkdownEditor />
                 </div>
             </ResizablePanel>
