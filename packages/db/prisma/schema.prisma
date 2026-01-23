@@ -63,7 +63,7 @@ model User {
   emailVerified DateTime?
   image         String?
   name          String?
-  ChatGroup     ChatGroup[]
+
   ChatMessage   ChatMessage[]
   accounts      Account[]
   sessions      Session[]
@@ -85,17 +85,19 @@ model Pod {
   members     User[]   @relation("PodMembers") // this is the name of the relation so prisma doesn't get confused and create a new table for this relationship.
   // inorder to reduce ambiguity to prisma give relation names explicitly to avoid errors.
   invite      Invite?
+  chatGroup   ChatGroup?
 
   @@map("pods")
 }
 
 model ChatGroup {
   id          String        @id @default(uuid()) @db.Uuid
-  userId      String        @db.Uuid
   title       String        @db.VarChar(100)
+  podId       String        @unique @db.Uuid
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade) // when the parent is deleted delete the related records as well.
+  
+  pod       Pod      @relation(fields: [podId], references: [id], onDelete: Cascade)
   ChatMessage ChatMessage[]
 
   @@map("chat_groups")
