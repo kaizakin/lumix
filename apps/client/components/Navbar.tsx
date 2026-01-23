@@ -1,53 +1,32 @@
-import { Button } from "@/components/ui/button"
-import Image from "next/image"
-// Logo is imported from public folder
-const logoSrc = "/Logo_lumix.png";
-import { asimovian } from "@/style/font"
-import {
-    NavigationMenu,
-    NavigationMenuContent,
-    NavigationMenuIndicator,
-    NavigationMenuItem,
-    NavigationMenuLink,
-    NavigationMenuList,
-    NavigationMenuTrigger,
-    NavigationMenuViewport,
-} from "@/components/ui/navigation-menu"
-import { JSX } from "react";
+
+import Image from "next/image";
+import Link from "next/link";
+import ArrowNarrowRightDashedIcon from "./ui/arrow-narrow-right-dashed-icon";
+
+export const Navbar = () => {
+    return (
+        <nav className="w-full py-2 px-8 md:px-50 fixed left-0 right-0 top-0 bg-[#faf7f3]/70 backdrop-blur-xl flex items-center justify-between z-50 border-b border-neutral-200">
+            <Link href="/" className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                <div className="w-10 h-10 rounded-lg bg-teal-500 flex items-center justify-center">
+                    <Image src={"/lumixlogo.png"} alt="L" width={"30"} height={"30"}></Image>
+                </div>
+                <span className="text-neutral-500 text-2xl">Lumix</span>
+            </Link>
 
 
-export const Navbar = () : JSX.Element=> {
-    return <div className="mx-35 flex justify-between items-center gap-2">
-        <div className="rounded-lg flex w-full justify-between mt-2 items-center p-1 shadow-[6px_0_6px_5px_rgba(0,0,0,0.9)] shadow-accent ">
-            <div className="flex gap-2 items-center text-2xl">
-                <Image
-                    src={logoSrc}
-                    width={40}
-                    height={40}
-                    className="h-10 w-10"
-                    alt="Lumix logo"
-                />
-                <span className={`${asimovian.className}`}>Lumix</span>
+            <div className="flex items-center space-x-4">
+                <Link href="/login" className="text-sm font-medium text-neutral-600 transition-colors">
+                    Log in
+                </Link>
+                <Link
+                    href="/signup"
+                    className="inline-flex items-center gap-1 text-sm font-medium bg-white text-black px-4 py-2 rounded-md hover:bg-teal-200 group hover:text-black transition-all"
+                >
+                    Create Profile
+                    <ArrowNarrowRightDashedIcon />
+                </Link>
             </div>
+        </nav>
+    );
+};
 
-            <NavigationMenu>
-                <NavigationMenuList>
-                    <NavigationMenuItem>
-                        <NavigationMenuTrigger>Create a room</NavigationMenuTrigger>
-                        <NavigationMenuContent>
-                            <NavigationMenuLink><div className="w-20">Voice Call</div></NavigationMenuLink>
-                            <NavigationMenuLink>Video room</NavigationMenuLink>
-                        </NavigationMenuContent>
-                    </NavigationMenuItem>
-                </NavigationMenuList>
-            </NavigationMenu>
-            <Button
-                variant="outline"
-                className="text-xs cursor-pointer"
-            >
-                Sign up Now
-            </Button>
-        </div>
-        <Button className="cursor-pointer mt-2 py-5">Dashboard</Button>
-    </div>
-}

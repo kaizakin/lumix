@@ -40,7 +40,7 @@
     "gif-picker-react": "^1.5.0",
     "konva": "^10.0.7",
     "lucide-react": "^0.542.0",
-    "motion": "^12.23.22",
+    "motion": "^12.26.2",
     "next": "16.0.10",
     "next-auth": "5.0.0-beta.30",
     "next-themes": "^0.4.6",
