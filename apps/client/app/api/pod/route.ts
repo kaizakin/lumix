@@ -12,6 +12,15 @@ export async function POST(req: NextRequest) {
 
         const userId = session.user.id;
 
+        // Verify if user exists in DB (to handle stale sessions)
+        const userExists = await prisma.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!userExists) {
+            return NextResponse.json({ error: "User not found. Please re-login." }, { status: 401 });
+        }
+
         const body = await req.json();
         const { title, description } = body;
 
@@ -35,7 +44,7 @@ export async function POST(req: NextRequest) {
             const chatGroup = await tx.chatGroup.create({
                 data: {
                     id: pod.id, // FORCE the same ID
-                    userId,
+                    podId: pod.id,
                     title: pod.title,// title same as well
                 },
             });

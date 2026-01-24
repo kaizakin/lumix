@@ -7,21 +7,24 @@ import { ChevronsUpDown, Settings, Bell, LogOut } from "lucide-react"
 import { useSidebar } from "./ui/sidebar"
 import type { JSX } from "react"
 import { signOut } from "next-auth/react"
+import { useSession } from "next-auth/react"
 
 export function SidebarProfile(): JSX.Element {
   const { state } = useSidebar();
+  const session = useSession();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="w-full px-2 overflow-hidden justify-center py-1 cursor-pointer focus:outline-none hover:bg-sidebar-accent">
+        <Button variant="ghost" className="w-full overflow-hidden justify-center py-1 cursor-pointer focus:outline-none hover:bg-neutral-400/70 mr-3">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="https://github.com/shadcn.png" alt="User avatar" />
+            <AvatarImage src={session.data?.user?.image as string} alt="User avatar" />
             <AvatarFallback>SC</AvatarFallback>
           </Avatar>
           {state === "expanded" &&
             <div className="flex flex-col items-start">
-              <span className="text-sm font-medium">Karthik</span>
-              <span className="text-xs text-muted-foreground">Karthik@gmail.com</span>
+              <span className="text-sm font-medium">{session.data?.user?.name}</span>
+              <span className="text-xs text-muted-foreground">{session.data?.user?.email}</span>
             </div>}
           {state === "expanded" && <ChevronsUpDown />}
         </Button>

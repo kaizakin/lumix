@@ -35,12 +35,12 @@ export function AppSidebar(): JSX.Element {
     const { state } = useSidebar();
     return (
         <>
-            <Sidebar variant="sidebar" collapsible="icon" className="outline-none">
+            <Sidebar variant="floating" collapsible="icon" className="outline-none">
                 <SidebarHeader className="p-2 bg-transparent">
                     {state === "expanded" && (
                         <div className="flex items-center gap-3 px-2 py-2 rounded transition-colors hover:bg-teal3/50">
                             <div className="bg-teal2 p-2 w-fit flex-shrink-0">
-                                <Image width={20} height={20} className="h-5 w-5" src="/lumixlogo.png" alt="Lumix" style={{ filter: 'brightness(0) invert(1)' }} />
+                                <Image width={20} height={20} className="h-5 w-5 object-cover" src="/lumixlogo.png" alt="Lumix" style={{ filter: 'brightness(0) invert(1)' }} />
                             </div>
                             <div className="flex flex-col min-w-0">
                                 <span className={`${asimovian.className} font-bold text-sm text-white leading-none`}>LUMIX</span>
@@ -60,7 +60,7 @@ export function AppSidebar(): JSX.Element {
                             <SidebarMenu>
                                 {items.map((item) => (
                                     <SidebarMenuItem key={item.title}>
-                                        <SidebarMenuButton asChild>
+                                        <SidebarMenuButton asChild className="hover:bg-neutral-400/70">
                                             <a href={item.url}>
                                                 <item.icon />
                                                 <span>{item.title}</span>
@@ -75,7 +75,7 @@ export function AppSidebar(): JSX.Element {
                 <SidebarGroup>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                            <SidebarMenuButton><Podcast size={16} />Pods</SidebarMenuButton>
+                            <SidebarMenuButton className="hover:bg-neutral-400/70"><Podcast size={16} />Pods</SidebarMenuButton>
                             <SidebarMenuSub>
                                 <SidebarMenuSubItem className="max-h-60 cursor-pointer overflow-y-auto">
                                     <Pod image="https://media.tenor.com/sUOkoSh_yYAAAAAe/koopa-bah-bah.png" link="#" podName="The Gang"></Pod>
@@ -104,7 +104,7 @@ type podProps = {
 }
 
 function Pod({ image, podName, link }: podProps) {
-    return <div className="flex w-full gap-1 my-2 items-center hover:bg-(--color-teal3)">
+    return <div className="flex w-full gap-1 my-2 items-center hover:bg-neutral-400/70">
         <Avatar className="h-8 w-8">
             <AvatarImage src={image} alt="Pod Pic" />
             <AvatarFallback>PC</AvatarFallback>

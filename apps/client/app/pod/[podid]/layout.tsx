@@ -16,6 +16,8 @@ import { useParams } from "next/navigation";
 import { Modal } from "@/components/Modal";
 import { usePod } from "@/hooks/usePod";
 
+import { PodSettings } from "@/components/PodSettings";
+
 const Layout = ({ children }: { children: React.ReactNode }) => {
     const params = useParams();
     const podId = params.podid as string;
@@ -26,6 +28,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     const [isSidebarOpen, setIsSideBarOpen] = useState(false);
     const [code, setCode] = useState("Wait");
     const [shareOpen, setShareOpen] = useState(false);
+    const [settingsOpen, setSettingsOpen] = useState(false);
     const [copied, setCopied] = useState(false);
     const APP_URL = process.env.NEXT_PUBLIC_APP_URL!
     const { data, isLoading } = usePod(podId);
@@ -55,7 +58,12 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                         <Share2 className="h-4 w-4 mr-2" />
                         Share
                     </Button>
-                    <Button variant="outline" size="sm" className="hover:bg-teal-400/50 hover:text-white cursor-pointer">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="hover:bg-teal-400/50 hover:text-white cursor-pointer"
+                        onClick={() => setSettingsOpen(true)}
+                    >
                         <Settings className="h-4 w-4" />
                     </Button>
                 </div>
@@ -117,6 +125,12 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                 </div>
             </div>
         </Modal>
+
+        <PodSettings
+            open={settingsOpen}
+            onClose={() => setSettingsOpen(false)}
+            podId={podId}
+        />
 
         <div className="flex-1 flex overflow-hidden min-h-0">
             <div className="flex flex-col w-full min-h-0">
