@@ -86,6 +86,7 @@ model Pod {
   // inorder to reduce ambiguity to prisma give relation names explicitly to avoid errors.
   invite      Invite?
   chatGroup   ChatGroup?
+  files       PodFile[]
 
   @@map("pods")
 }
@@ -131,4 +132,16 @@ model Invite{
   creator     User   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
 
   @@map("invites")
+}
+
+model PodFile{
+  id        String @id @default(uuid()) @db.Uuid
+  podId     String @db.Uuid
+  pod       Pod @relation(fields: [podId], references: [id], onDelete: Cascade)
+
+  fileName  String
+  fileSize  String
+  fileId    String @db.Uuid
+
+  uploadedAt DateTime @default(now())
 }
