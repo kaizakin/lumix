@@ -91,7 +91,7 @@ export function Canvas() {
       container.style.cursor = 'crosshair';
     } else if (tool === ToolType.TEXT) {
       container.style.cursor = 'text';
-    } else if (tool === ToolType.SELECTION || isPanning) {
+    } else if (tool === ToolType.HAND || isPanning) {
       container.style.cursor = isPanning ? 'grabbing' : 'grab';
     } else {
       container.style.cursor = 'default';
@@ -195,7 +195,7 @@ export function Canvas() {
     const isMiddleButton = e.evt.button === 1;
     const isSpacePan = e.evt.button === 0 && e.evt.shiftKey;
 
-    if (isMiddleButton || isSpacePan || (tool === ToolType.SELECTION && e.evt.button === 0)) {
+    if (isMiddleButton || isSpacePan || (tool === ToolType.HAND && e.evt.button === 0)) {
       setIsPanning(true);
       lastPanPosRef.current = { x: pos.x, y: pos.y };
       return;
@@ -370,12 +370,12 @@ export function Canvas() {
     }
 
     if (tool === ToolType.ERASER) {
-      setEraserCursor({ x: pos.x, y: pos.y, visible: true });
+      const transform = stage.getAbsoluteTransform().copy().invert();
+      const adjustedPos = transform.point(pos);
+      setEraserCursor({ x: adjustedPos.x, y: adjustedPos.y, visible: true });
 
       // If erasing (mouse down), erase shapes under cursor
       if (isErasing) {
-        const transform = stage.getAbsoluteTransform().copy().invert();
-        const adjustedPos = transform.point(pos);
         eraseShapeAtPoint(adjustedPos.x, adjustedPos.y, layerRef as React.RefObject<Konva.Layer>, erasedShapesRef);
       }
       return;
@@ -579,7 +579,6 @@ export function Canvas() {
         onWheel={handleWheel}
         draggable={false}
       >
-        <Layer ref={layerRef} />
         <Layer ref={layerRef}>
           {/* Custom eraser cursor */}
           {eraserCursor.visible && tool === ToolType.ERASER && (

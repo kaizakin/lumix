@@ -7,7 +7,8 @@ export enum ToolType {
   LINE = 'line',
   PENCIL = 'pencil',
   TEXT = 'text',
-  ERASER = 'eraser'
+  ERASER = 'eraser',
+  HAND = 'hand'
 }
 
 export interface Tool {

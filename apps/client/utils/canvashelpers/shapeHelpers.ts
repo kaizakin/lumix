@@ -43,8 +43,9 @@ export const getShapeAtPoint = (x: number, y: number, layerRef: React.RefObject<
             continue; // Skip normal bounding box check for these shapes
         }
 
-        // Get the shape's bounding box
-        const box = shape.getClientRect();
+        // Get the shape's bounding box relative to the layer (world space)
+        // We must cast layerRef.current to Konva.Layer because we checked it strictly at the top
+        const box = shape.getClientRect({ relativeTo: layerRef.current as Konva.Layer });
 
         // Check if point is inside bounding box with some padding
         const padding = ERASER_CONFIG.hitRadius;
