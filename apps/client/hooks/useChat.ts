@@ -6,50 +6,24 @@ import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChatMessage } from "@repo/types"
 import { toast } from "sonner";
+import { usePodSocket } from "@/components/providers/PodSocketProvider";
 
 export function useChat(podId: string) {
     const session = useSession();
 
-    const [isConnected, setIsConnected] = useState(false);
-
     const MAX_MESSAGE_LENGTH = 500;
 
-    const socket = useRef(getSocket()); // useref to prevent multiple connection on re-render.
+    const { socket, isConnected } = usePodSocket();
+
     const queryClient = useQueryClient();
     const optimisticIdCounter = useRef(0);
-
-    useEffect(() => {
-        const currentSocket = socket.current;
-        currentSocket.auth = { pod: podId };
-
-        if (!currentSocket.connected) {
-            currentSocket.connect();
-        }
-
-        function onConnect() {
-            setIsConnected(true);
-        }
-
-        function onDisconnect() {
-            setIsConnected(false);
-        }
-
-        currentSocket.on("connect", onConnect);
-        currentSocket.on("disconnect", onDisconnect);
-
-        return () => {
-            currentSocket.off("connect", onConnect);
-            currentSocket.off("disconnect", onDisconnect);
-        }
-    }, [podId]);
-
-
 
     const messagesQuery = useQuery({
         queryKey: ['messages', podId],
         queryFn: async () => {
             return new Promise<ChatMessage[]>((resolve) => {
-                socket.current.emit("fetch_messages",
+                if (!socket) return [];
+                socket.emit("fetch_messages",
                     { pod: podId },
                     (fetchedMessages: ChatMessage[]) => {
                         resolve(fetchedMessages);
@@ -57,7 +31,7 @@ export function useChat(podId: string) {
                 )
             })
         },
-        enabled: isConnected
+        enabled: isConnected && !!socket
     })
 
     function onError(error: { type: string, message: string }) {
@@ -67,6 +41,8 @@ export function useChat(podId: string) {
     }
 
     useEffect(() => {
+        if (!socket) return;
+
         function onNewMessage(message: ChatMessage) {
             console.log("new message received")
             queryClient.setQueryData(['messages', podId],
@@ -95,7 +71,7 @@ export function useChat(podId: string) {
             )
         }
 
-        const currentSocket = socket.current;
+        const currentSocket = socket;
 
         currentSocket.on("new_message", onNewMessage);
         currentSocket.on("error", onError);
@@ -104,17 +80,7 @@ export function useChat(podId: string) {
             currentSocket.off("new_message", onNewMessage);
             currentSocket.off("new_message", onNewMessage);
         }
-    }, [podId, queryClient]);
-
-
-    // cleanup the socket connection on disconnect.
-    useEffect(() => {
-        return () => {
-            if (socket.current.connected) {
-                socket.current.disconnect();
-            }
-        }
-    }, []);
+    }, [podId, queryClient, socket]);
 
     const sendMessageMutation = useMutation({
         mutationFn: async (messageText: string) => {
@@ -134,7 +100,9 @@ export function useChat(podId: string) {
             }
 
             return new Promise<void>((resolve, reject) => {
-                socket.current.emit("send_message", message, (error: any) => {
+                if (!socket) throw new Error("socket not connected!");
+
+                socket.emit("send_message", message, (error: any) => {
                     if (error) {
                         reject(error)
                     } else {
