@@ -12,6 +12,7 @@
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
     "@milkdown/kit": "^7.18.0",
+    "@milkdown/plugin-collab": "^7.18.0",
     "@milkdown/react": "^7.18.0",
     "@milkdown/theme-nord": "^7.18.0",
     "@prisma/client": "^7.2.0",
@@ -56,6 +57,8 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
     "uuid": "^13.0.0",
+    "y-protocols": "^1.0.7",
+    "yjs": "^13.6.29",
     "zustand": "^5.0.8"
   },
   "devDependencies": {

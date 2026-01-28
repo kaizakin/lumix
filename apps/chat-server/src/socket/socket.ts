@@ -2,6 +2,7 @@ import { Server, Socket } from "socket.io";
 import redis from "../redis/redis.js";
 import { prisma } from "@repo/db";
 import type { ChatMessage, ChatMessageDBRecord, SendMessageData } from "@repo/types";
+import * as Y from "yjs";
 
 
 // Redis cache expiry time (24 hours)
@@ -14,6 +15,8 @@ interface CustomSocket extends Socket {
 interface FetchMessagesData {
     pod: string;
 }
+
+const docs = new Map<string, Y.Doc>();
 
 
 function formatMessage(msg: ChatMessageDBRecord): ChatMessage {
@@ -77,7 +80,7 @@ export function SetupSocket(io: Server): void {
                 .then((messages => socket.emit("fetch_messages", messages)))
                 .catch((error) => console.error(`error on connection ${error}`));
         } else {
-            console.log(`Socket ${socket.pod} connected without a room`);
+            console.log(`Socket ${socket.pod} connected without a pod`);
         }
 
         socket.on("fetch_messages", async (data: FetchMessagesData, callback) => {
@@ -131,6 +134,31 @@ export function SetupSocket(io: Server): void {
             } catch (error) {
                 console.error("Error saving message to DB:", error);
             }
+        });
+
+        socket.on("join-editor", (roomId: string) => {
+            socket.join(roomId);
+            console.log(`Socket ${socket.id} joined YJS editor: ${roomId}`);
+
+            let doc = docs.get(roomId);
+            if (!doc) {
+                doc = new Y.Doc();
+                docs.set(roomId, doc);
+            }
+
+            // send initial state
+            const update = Y.encodeStateAsUpdate(doc);
+            socket.emit("yjs-update", update);
+
+            // remove previous listener to avoid stacking if joining new room
+            // for example user switching pods
+            socket.removeAllListeners("yjs-update");
+
+            socket.on("yjs-update", (update: Uint8Array) => {
+                Y.applyUpdate(doc!, update);
+                console.log("update event", update);
+                socket.to(roomId).emit("yjs-update", update);
+            });
         });
 
         socket.on("disconnect", () => {
