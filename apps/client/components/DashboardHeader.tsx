@@ -6,7 +6,7 @@ import { useState } from "react"
 import { CreatePodDialog } from "./CreatePodDialog"
 
 export const DashboardHeader = () => {
-    const [notificationCount] = useState(3);
+    const [notificationCount] = useState(2);
 
     return (
         <div className="flex flex-col md:flex-row gap-4 md:gap-0 md:h-20 md:items-center md:justify-between py-4 md:py-0">
@@ -41,27 +41,20 @@ export const DashboardHeader = () => {
                         <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
                             <div className="flex items-center gap-2">
                                 <div className="h-2 w-2 rounded-full bg-primary" />
-                                <span className="font-medium text-xs sm:text-sm">New member joined Pod Alpha</span>
+                                <span className="font-medium text-xs sm:text-sm">Welcome onboard. Your workspace is prepped and ready for chaos</span>
                             </div>
-                            <span className="text-xs text-muted-foreground">2 minutes ago</span>
+                            <span className="text-xs text-muted-foreground">1 minute ago</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
                             <div className="flex items-center gap-2">
                                 <div className="h-2 w-2 rounded-full bg-primary" />
-                                <span className="font-medium text-xs sm:text-sm">Deadline approaching: Q4 Review</span>
+                                <span className="font-medium text-xs sm:text-sm">Create a pod and start brainstorming already!</span>
                             </div>
-                            <span className="text-xs text-muted-foreground">1 hour ago</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-                            <div className="flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full bg-primary" />
-                                <span className="font-medium text-xs sm:text-sm">5 new files shared in Design Pod</span>
-                            </div>
-                            <span className="text-xs text-muted-foreground">3 hours ago</span>
+                            <span className="text-xs text-muted-foreground">1 minute ago</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-                <CreatePodDialog/>
+                <CreatePodDialog />
             </div>
         </div>
     )

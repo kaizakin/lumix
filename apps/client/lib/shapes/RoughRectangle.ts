@@ -20,4 +20,12 @@ export class RoughRectangle extends RoughShape {
       seed: this.seed,
     });
   }
+
+  // Custom hit function to ensure the entire rectangle area is clickable
+  _hitFunc(context: CanvasRenderingContext2D) {
+    context.beginPath();
+    context.rect(0, 0, this.width(), this.height());
+    context.closePath();
+    (context as any).fillStrokeShape(this);
+  }
 }

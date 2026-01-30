@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { KonvaEventObject } from 'konva/lib/Node';
-import { Stage, Layer, Circle } from 'react-konva';
+import { Stage, Layer, Circle, Transformer } from 'react-konva';
 import Konva from 'konva';
 import { useCanvas } from '@/hooks/useCanvas';
 import { Toolbar } from './ToolBar';
@@ -17,6 +17,7 @@ import { RoughText } from '@/lib/shapes/RoughText';
 import { ERASER_CONFIG } from '@/utils/constants';
 import { ZOOM_CONFIG } from '@/utils/constants';
 import { eraseShapeAtPoint } from '@/utils/canvashelpers/shapeHelpers';
+
 type RoughShape = RoughRectangle | RoughEllipse | RoughDiamond | RoughArrow | RoughLine | RoughPencil | RoughText | null;
 
 export function Canvas() {
@@ -28,6 +29,8 @@ export function Canvas() {
     strokeColor,
     strokeWidth,
     roughness,
+    selectedShapeId,
+    setSelectedShapeId,
   } = useCanvas();
 
   const [stageSize, setStageSize] = useState({
@@ -37,6 +40,7 @@ export function Canvas() {
   const [isMounted, setIsMounted] = useState(false);
   const stageRef = useRef<Konva.Stage>(null);
   const layerRef = useRef<Konva.Layer>(null);
+  const transformerRef = useRef<Konva.Transformer>(null);
   const textInputRef = useRef<HTMLTextAreaElement>(null);
   const [textPosition, setTextPosition] = useState({ x: 0, y: 0 });
   const currentShapeRef = useRef<RoughShape>(null);
@@ -96,7 +100,38 @@ export function Canvas() {
     } else {
       container.style.cursor = 'default';
     }
+
+    // Toggle draggable state of shapes based on tool
+    if (layerRef.current) {
+      const shapes = layerRef.current.getChildren((node) => {
+        return node.getClassName() !== 'Transformer' && node.name() !== 'eraserCursor';
+      });
+
+      shapes.forEach((shape) => {
+        // Only draggable if selection tool is active
+        shape.draggable(tool === ToolType.SELECTION);
+      });
+    }
   }, [tool, isPanning]);
+
+  // Handle selection and Transformer
+  useEffect(() => {
+    if (selectedShapeId && transformerRef.current && layerRef.current) {
+      // Find the shape node by ID
+      const selectedNode = layerRef.current.findOne('#' + selectedShapeId);
+
+      if (selectedNode) {
+        transformerRef.current.nodes([selectedNode]); // fiind the node 
+        transformerRef.current.getLayer()?.batchDraw();// after the transformer attached redraw
+      } else {
+        transformerRef.current.nodes([]);
+        transformerRef.current.getLayer()?.batchDraw();
+      }
+    } else if (transformerRef.current) {
+      transformerRef.current.nodes([]);
+      transformerRef.current.getLayer()?.batchDraw();
+    }
+  }, [selectedShapeId]);
 
   // Zoom functions
   const handleZoomIn = () => {
@@ -212,7 +247,27 @@ export function Canvas() {
       return;
     }
 
-    if (tool === ToolType.SELECTION) return; // don't draw anything for a select tool dumbass.
+    // Selection logic
+    if (tool === ToolType.SELECTION) {
+      // If clicked on empty stage, deselect
+      if (e.target === stage) {
+        setSelectedShapeId(null);
+        return;
+      }
+
+      // If clicked on a shape (not a transformer handle)
+      const clickedNode = e.target;
+      // Also ensure we are not clicking on transformer handles
+      if (clickedNode.getParent()?.className === 'Transformer') {
+        return;
+      }
+
+      const id = clickedNode.id();
+      if (id) {
+        setSelectedShapeId(id);
+      }
+      return;
+    }
 
     // Transform mouse position to canvas space (accounting for zoom/pan)
     const transform = stage.getAbsoluteTransform().copy().invert();
@@ -481,6 +536,31 @@ export function Canvas() {
     setEraserCursor({ ...eraserCursor, visible: false });
   };
 
+  // Update dimensions of rough shapes when transform ends
+  const handleTransformEnd = () => {
+    if (selectedShapeId && layerRef.current) {
+      const shape = layerRef.current.findOne('#' + selectedShapeId);
+      if (shape) {
+        // Apply scale to width/height and reset scale
+        // This is crucial for rough shapes to maintain stroke consistency
+        const scaleX = shape.scaleX();
+        const scaleY = shape.scaleY();
+
+        // Only apply if significant change to avoid float jitter
+        if (Math.abs(scaleX - 1) > 0.001 || Math.abs(scaleY - 1) > 0.001) {
+          shape.width(shape.width() * scaleX);
+          shape.height(shape.height() * scaleY);
+
+          shape.scaleX(1);
+          shape.scaleY(1);
+
+          // Force redraw
+          layerRef.current.batchDraw();
+        }
+      }
+    }
+  };
+
   const handleTextSubmit = (text: string) => {
 
     if (!isTextReadyRef.current) {
@@ -592,6 +672,18 @@ export function Canvas() {
               listening={false}  // Don't interfere with mouse events
             />
           )}
+
+          <Transformer
+            ref={transformerRef}
+            onTransformEnd={handleTransformEnd}
+            boundBoxFunc={(oldBox, newBox) => {
+              // Limit minimum size
+              if (newBox.width < 5 || newBox.height < 5) {
+                return oldBox;// won't allow to shrink the shape below 5px return old box atp.
+              }
+              return newBox;
+            }}
+          />
         </Layer>
       </Stage>
       {isEditingText && (

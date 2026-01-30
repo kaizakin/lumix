@@ -21,13 +21,15 @@ export class RoughArrow extends Konva.Group {
     super(config);
 
     this.points = config.points || [0, 0, 0, 0];
+    this.points = [];
     this.arrowSize = config.arrowSize || 15;
     this.roughness = config.roughness || 1;
     this.seed = config.seed || Math.random() * 1000;
     this._stroke = config.stroke as string || '#0000FF'; // _ is a convention to denote these are private vars don't change it when extending
     this._strokeWidth = config.strokeWidth || 2;
 
-    this.createArrow();
+    const points = config.points || [0, 0, 0, 0];
+    this.setPoints(points);
   }
 
   createArrow() {
@@ -36,13 +38,27 @@ export class RoughArrow extends Konva.Group {
 
     if (this.points.length < 4) return;
 
-    const [x1, y1, x2, y2] = this.points;
+    // Use internal relative points
+    const x1 = this.points[0];
+    const y1 = this.points[1];
+    const x2 = this.points[2];
+    const y2 = this.points[3];
+
+    if (x1 === undefined || y1 === undefined || x2 === undefined || y2 === undefined) return;
+
     const generator = rough.generator();
 
     // Create line
     const lineShape = new Konva.Shape({
+      hitStrokeWidth: 20,
+      hitFunc: (context) => {
+        context.beginPath();
+        context.moveTo(x1, y1);
+        context.lineTo(x2, y2);
+        context.fillStrokeShape(lineShape);
+      },
       sceneFunc: (context) => {
-        const lineDrawable = generator.line(x1 as number, y1 as number, x2 as number, y2 as number, {
+        const lineDrawable = generator.line(x1, y1, x2, y2, {
           stroke: this._stroke,
           strokeWidth: this._strokeWidth,
           roughness: this.roughness,
@@ -54,7 +70,7 @@ export class RoughArrow extends Konva.Group {
     });
 
     // Calculate arrow angle
-    if (!y1 || !y2 || !x2 || !x1) return;
+    // Arrow logic using relative points works same as absolute as long as dX, dY are same.
     const angle = Math.atan2(y2 - y1, x2 - x1);
 
     // Calculate arrowhead points
@@ -79,13 +95,27 @@ export class RoughArrow extends Konva.Group {
 
     // if(!arrowLeft || !arrowRight) return;
 
+    const al0 = arrowLeft[0] as number;
+    const al1 = arrowLeft[1] as number;
+    const ar0 = arrowRight[0] as number;
+    const ar1 = arrowRight[1] as number;
+
     // Create arrowhead
     const arrowheadShape = new Konva.Shape({
+      hitStrokeWidth: 20,
+      hitFunc: (context) => {
+        context.beginPath();
+        context.moveTo(al0, al1);
+        context.lineTo(arrowTipX, arrowTipY);
+        context.lineTo(ar0, ar1);
+        context.closePath();
+        context.fillStrokeShape(arrowheadShape);
+      },
       sceneFunc: (context) => {
         const arrowPoints: [number, number][] = [
-          [arrowLeft[0] as number, arrowLeft[1] as number],
+          [al0, al1],
           [arrowTipX, arrowTipY],
-          [arrowRight[0] as number, arrowRight[1] as number],
+          [ar0, ar1],
         ];
 
         const arrowDrawable = generator.polygon(arrowPoints, {
@@ -106,13 +136,47 @@ export class RoughArrow extends Konva.Group {
     this.add(arrowheadShape);
   }
 
-  setPoints(points: number[]) {// updates points and redraws
-    this.points = points;
+  setPoints(points: number[]) {
+    if (points.length < 4) {
+      this.points = points;
+      return;
+    }
+
+    const x1 = points[0] as number;
+    const y1 = points[1] as number;
+    const x2 = points[2] as number;
+    const y2 = points[3] as number;
+
+    // Normalize bounds
+    const minX = Math.min(x1, x2);
+    const minY = Math.min(y1, y2);
+    const maxX = Math.max(x1, x2);
+    const maxY = Math.max(y1, y2);
+
+    this.x(minX);
+    this.y(minY);
+    this.width(maxX - minX);
+    this.height(maxY - minY);
+
+    // Store relative points
+    this.points = [
+      x1 - minX,
+      y1 - minY,
+      x2 - minX,
+      y2 - minY
+    ];
+
     this.createArrow();
   }
 
   getPoints() {
-    return this.points;
+    // Return absolute points from relative
+    return [
+      (this.points[0] as number) + this.x(),
+      (this.points[1] as number) + this.y(),
+      (this.points[2] as number) + this.x(),
+      (this.points[3] as number) + this.y()
+    ];
   }
 
   // this function works as a setter and getter in the same time kudos to claude for creating this lmao....

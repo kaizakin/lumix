@@ -25,4 +25,19 @@ export class RoughEllipse extends RoughShape {
             }
         );
     }
+    // Custom hit function to ensure the entire ellipse area is clickable
+    _hitFunc(context: CanvasRenderingContext2D) {
+        context.beginPath();
+        context.ellipse(
+            this.width() / 2,
+            this.height() / 2,
+            this.width() / 2,
+            this.height() / 2,
+            0,
+            0,
+            Math.PI * 2
+        );
+        context.closePath();
+        (context as any).fillStrokeShape(this);
+    }
 }

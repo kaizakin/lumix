@@ -1,3 +1,4 @@
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -19,7 +20,7 @@ export const Navbar = () => {
                     Log in
                 </Link>
                 <Link
-                    href="/signup"
+                    href="/register"
                     className="inline-flex items-center gap-1 text-sm font-medium bg-white text-black px-4 py-2 rounded-md hover:bg-teal-200 group hover:text-black transition-all"
                 >
                     Create Profile

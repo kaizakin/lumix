@@ -1,9 +1,9 @@
-"use client";
-
 import GithubButton from "@/components/GithubButton";
 import { Navbar } from "@/components/Navbar";
+import Link from "next/link";
 
 export default function Home() {
+
   return (
     <div className="relative min-h-screen bg-[#faf7f3] text-neutral-900 overflow-x-hidden selection:bg-[#ADEED9]">
       <Navbar />
@@ -47,9 +47,9 @@ export default function Home() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <button className="inline-flex h-12 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-neutral-900 shadow hover:bg-teal-200 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-950 disabled:pointer-events-none disabled:opacity-50 transition-all active:scale-95">
+                <Link href="/dashboard" className="inline-flex h-12 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-neutral-900 shadow hover:bg-teal-200 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-950 disabled:pointer-events-none disabled:opacity-50 transition-all active:scale-95">
                   Get Started Free
-                </button>
+                </Link>
                 <GithubButton />
               </div>
 

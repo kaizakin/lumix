@@ -8,7 +8,7 @@ import { DEFAULT_SHAPE_CONFIG } from '@/utils/constants';
 export function useCanvas() {
   const [tool, setTool] = useState(ToolType.SELECTION);
   const [shapes, setShapes] = useState<ShapeConfig[]>([]);
-  const [selectedShapeId, setSelectedShapeId] = useState(null);
+  const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [strokeColor, setStrokeColor] = useState(DEFAULT_SHAPE_CONFIG.stroke);
   const [strokeWidth, setStrokeWidth] = useState(DEFAULT_SHAPE_CONFIG.strokeWidth);

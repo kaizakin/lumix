@@ -14,15 +14,18 @@ export class RoughPencil extends RoughShape {
 
   constructor(config: RoughPencilProps) {
     super(config);
-    this.points = config.points || [];
+    this.hitStrokeWidth(20);
+    this.points = [];
+    const points = config.points || [];
+    this.setPoints(points);
   }
 
   generateDrawable(): Drawable {
     const generator = rough.generator();
-    
+
     // Need at least 2 points to draw
     if (this.points.length < 4) {
-      return generator.linearPath([[0, 0], [0, 0]],{ // a empty drawing
+      return generator.linearPath([[0, 0], [0, 0]], { // a empty drawing
         stroke: this.stroke() as string,
         strokeWidth: this.strokeWidth(),
         roughness: this.roughness,
@@ -47,18 +50,81 @@ export class RoughPencil extends RoughShape {
 
   // Add a new point to the path
   addPoint(x: number, y: number) {
-    this.points.push(x, y);
-    this._clearCache();  // Force redraw
+    // This is called during drawing, so inputs are absolute mouse coordinates.
+    // We need to re-normalize the entire path because adding a point might change the bounding box (e.g. dragging left/up)
+
+    // Get current absolute points
+    const absPoints = this.getPoints();
+    absPoints.push(x, y);
+
+    // Recalculate everything
+    this.setPoints(absPoints);
   }
 
   // Update all points at once
   setPoints(points: number[]) {
-    this.points = points;
+    if (points.length < 2) {
+      this.points = points;
+      return;
+    }
+
+    // Find bounds
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+    for (let i = 0; i < points.length; i += 2) {
+      const x = points[i];
+      const y = points[i + 1];
+
+      if (x !== undefined && y !== undefined) {
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
+      }
+    }
+
+    // Safety check if no valid points found
+    if (minX === Infinity || minY === Infinity) {
+      this.points = points;
+      return;
+    }
+
+    // Update shape transform
+    this.x(minX);
+    this.y(minY);
+    this.width(maxX - minX);
+    this.height(maxY - minY);
+
+    // Convert to relative points
+    const relativePoints = [];
+    for (let i = 0; i < points.length; i += 2) {
+      const x = points[i];
+      const y = points[i + 1];
+      if (x !== undefined && y !== undefined) {
+        relativePoints.push(x - minX);
+        relativePoints.push(y - minY);
+      }
+    }
+
+    this.points = relativePoints;
     this._clearCache();
   }
 
   getPoints() {
-    return this.points;
+    // Return absolute points
+    const points: number[] = [];
+    const x = this.x();
+    const y = this.y();
+
+    for (let i = 0; i < this.points.length; i += 2) {
+      const px = this.points[i];
+      const py = this.points[i + 1];
+      if (px !== undefined && py !== undefined) {
+        points.push(px + x);
+        points.push(py + y);
+      }
+    }
+    return points;
   }
 
   // Smooth the path
@@ -84,5 +150,18 @@ export class RoughPencil extends RoughShape {
 
     this.points = smoothed;
     this._clearCache();
+  }
+  // Custom hit function for pencil
+  _hitFunc(context: CanvasRenderingContext2D) {
+    if (this.points.length < 2) return;
+
+    context.beginPath();
+    context.moveTo(this.points[0] as number, this.points[1] as number);
+
+    for (let i = 2; i < this.points.length; i += 2) {
+      context.lineTo(this.points[i] as number, this.points[i + 1] as number);
+    }
+
+    (context as any).fillStrokeShape(this);
   }
 }
