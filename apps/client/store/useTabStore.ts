@@ -4,7 +4,6 @@ export enum Tabenum {
   Storm = 'storm',
   Scribble = 'scribble',
   Text = 'text',
-  Schedule = 'schedule'
 }
 
 

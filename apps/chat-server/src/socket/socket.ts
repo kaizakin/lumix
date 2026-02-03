@@ -10,6 +10,7 @@ const CACHE_EXPIRY = 60 * 60 * 24;
 
 interface CustomSocket extends Socket {
     pod?: string;
+    userId?: string;
 }
 
 interface FetchMessagesData {
@@ -17,6 +18,7 @@ interface FetchMessagesData {
 }
 
 const docs = new Map<string, Y.Doc>();
+let yjshandler: ((update: Uint8Array) => void) | null = null
 
 
 function formatMessage(msg: ChatMessageDBRecord): ChatMessage {
@@ -65,9 +67,13 @@ async function getMessagesForPod(pod: string): Promise<ChatMessage[]> {
 export function SetupSocket(io: Server): void {
     io.use((socket: CustomSocket, next) => {
         const pod = socket.handshake.auth.pod as string | undefined;
-        console.log(`Middleware: Auth pod: ${pod}`);
+        const userId = socket.handshake.auth.userId as string | undefined;
+        console.log(`Middleware: Auth pod: ${pod}, userId: ${userId}`);
         if (pod) {
             socket.pod = pod;
+        }
+        if (userId) {
+            socket.userId = userId;
         }
         next();
     })
@@ -152,13 +158,18 @@ export function SetupSocket(io: Server): void {
 
             // remove previous listener to avoid stacking if joining new room
             // for example user switching pods
-            socket.removeAllListeners("yjs-update");
+            // socket.removeAllListeners("yjs-update");
+            if (yjshandler) {
+                socket.off("yjs-update", yjshandler); // remove old one
+            }
 
-            socket.on("yjs-update", (update: Uint8Array) => {
+            yjshandler = (update: Uint8Array) => {
                 Y.applyUpdate(doc!, update);
                 console.log("update event", update);
                 socket.to(roomId).emit("yjs-update", update);
-            });
+            }
+
+            socket.on("yjs-update", yjshandler);
         });
 
         socket.on("disconnect", () => {

@@ -17,7 +17,8 @@ const io = new Server(server, {
         methods: ["GET", "POST"],
         credentials: true
     },
-    adapter: createAdapter(redis)
+    adapter: createAdapter(redis),
+    path: "/chat"
 })
 
 app.use(cors({
@@ -28,6 +29,7 @@ app.use(cors({
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+
 
 SetupSocket(io);
 export { io }; 

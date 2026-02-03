@@ -4,6 +4,7 @@ import {
     ResizablePanelGroup,
 } from "@/components/ui/resizable"
 import { MarkdownEditor } from "./MarkdownEditor"
+import { PodVideoPage } from "./video/PodVideoPage"
 
 export function Resizable() {
     return (
@@ -19,7 +20,7 @@ export function Resizable() {
             <ResizableHandle />
             <ResizablePanel defaultSize={50} className="min-h-0 overflow-hidden">
                 <div className="flex h-full w-full items-center justify-center p-6">
-                    <span className="font-semibold">Two</span>
+                    <PodVideoPage/>
                 </div>
             </ResizablePanel>
         </ResizablePanelGroup>
