@@ -10,7 +10,7 @@ import { nord } from "@milkdown/theme-nord";
 import { indent } from '@milkdown/kit/plugin/indent'
 import "@milkdown/theme-nord/style.css"
 import { listener, listenerCtx } from '@milkdown/kit/plugin/listener';
-import { collab, collabServiceCtx } from "@milkdown/plugin-collab";
+import { collab, collabServiceCtx, CollabReady } from "@milkdown/plugin-collab";
 import { usePodSocket } from "@/components/providers/PodSocketProvider";
 import { useEffect, useMemo, useState, useRef } from "react";
 import * as Y from "yjs";
@@ -66,11 +66,16 @@ const MilkdownEditor: React.FC = () => {
   useEffect(() => {
     if (!socket || !isConnected || !editorReady || !collabServiceRef.current) return;
 
-    // Bind doc and awareness
-    collabServiceRef.current.bindDoc(ydoc).setAwareness(awareness);
+    try {
+      // Bind doc and awareness
+      collabServiceRef.current.bindDoc(ydoc).setAwareness(awareness);
 
-    // Connect
-    collabServiceRef.current.connect();
+      // Connect
+      collabServiceRef.current.connect();
+    } catch (error) {
+      console.error("Collab service failed to connect:", error);
+      return;
+    }
 
     // Existing Socket Logic
     console.log("Joining editor room. Socket ID:", socket.id);
@@ -113,14 +118,16 @@ const MilkdownEditor: React.FC = () => {
             console.log("Milkdown detected change", markdown.length);
           });
 
-          console.log("Getting collab service instance...");
-          const service = ctx.get(collabServiceCtx);
-          if (service) {
-            collabServiceRef.current = service;
-            setEditorReady(true);
-          } else {
-            console.error("Failed to get collab service instance");
-          }
+          // Collab service is only context-bound after CollabReady.
+          void ctx.wait(CollabReady)
+            .then(() => {
+              const service = ctx.get(collabServiceCtx);
+              collabServiceRef.current = service;
+              setEditorReady(true);
+            })
+            .catch((error) => {
+              console.error("Failed waiting for CollabReady:", error);
+            });
         } catch (error) {
           console.error("Error configuring Milkdown:", error);
         }
