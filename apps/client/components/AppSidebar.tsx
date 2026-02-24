@@ -72,22 +72,6 @@ export function AppSidebar(): JSX.Element {
                         </SidebarGroupContent>
                     </SidebarGroup>
                 </SidebarContent>
-                <SidebarGroup>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            <SidebarMenuButton className="hover:bg-neutral-400/70"><Podcast size={16} />Pods</SidebarMenuButton>
-                            <SidebarMenuSub>
-                                <SidebarMenuSubItem className="max-h-60 cursor-pointer overflow-y-auto">
-                                    <Pod image="https://media.tenor.com/sUOkoSh_yYAAAAAe/koopa-bah-bah.png" link="#" podName="The Gang"></Pod>
-                                    <Pod image="https://media.tenor.com/sUOkoSh_yYAAAAAe/koopa-bah-bah.png" link="#" podName="Idea a projecto"></Pod>
-                                    <Pod image="https://media.tenor.com/sUOkoSh_yYAAAAAe/koopa-bah-bah.png" link="#" podName="bah bah black sheep"></Pod>
-                                    <Pod image="https://media.tenor.com/sUOkoSh_yYAAAAAe/koopa-bah-bah.png" link="#" podName="The Gang"></Pod>
-                                    <Pod image="https://media.tenor.com/sUOkoSh_yYAAAAAe/koopa-bah-bah.png" link="#" podName="The Gang"></Pod>
-                                </SidebarMenuSubItem>
-                            </SidebarMenuSub>
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
                 <SidebarFooter>
                     <SidebarProfile />
                 </SidebarFooter>
