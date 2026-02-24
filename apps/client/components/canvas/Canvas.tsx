@@ -610,37 +610,74 @@ export function Canvas() {
     <div className='text-foreground relative'>
       <Toolbar onToolChange={setTool} selectedTool={tool} />
       {/* Zoom Controls */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black border border-gray-300 rounded-lg shadow-lg px-3 py-2 z-50">
+      <div className="fixed bottom-9 left-1/2 -translate-x-1/2 flex items-center z-50
+                      bg-[#1e1e1e] border border-white/10 rounded-xl
+                      shadow-[0_4px_24px_rgba(0,0,0,0.5)]
+                      divide-x divide-white/10 overflow-hidden
+                      backdrop-blur-md">
+
+        {/* Zoom Out */}
         <button
           onClick={handleZoomOut}
-          className="p-2 hover:bg-gray-100 rounded transition-colors"
-          title="Zoom Out"
+          title="Zoom out"
+          className="group flex items-center justify-center w-9 h-9
+                     text-white/60 hover:text-white hover:bg-white/8
+                     transition-all duration-150 active:scale-90"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
             <circle cx="11" cy="11" r="8" />
             <path d="M21 21l-4.35-4.35" />
             <line x1="8" y1="11" x2="14" y2="11" />
           </svg>
         </button>
 
+        {/* Zoom % — click to reset */}
         <button
           onClick={handleResetZoom}
-          className="px-3 py-1 hover:bg-gray-100 rounded transition-colors text-sm font-medium min-w-[60px]"
-          title="Reset Zoom"
+          title="Reset zoom (click)"
+          className="flex items-center justify-center h-9 px-3
+                     text-white/80 hover:text-white hover:bg-white/8
+                     text-[12px] font-semibold tabular-nums tracking-tight
+                     transition-all duration-150 min-w-13.5"
         >
           {Math.round(stageScale * 100)}%
         </button>
 
+        {/* Zoom In */}
         <button
           onClick={handleZoomIn}
-          className="p-2 hover:bg-gray-100 rounded transition-colors"
-          title="Zoom In"
+          title="Zoom in"
+          className="group flex items-center justify-center w-9 h-9
+                     text-white/60 hover:text-white hover:bg-white/8
+                     transition-all duration-150 active:scale-90"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
             <circle cx="11" cy="11" r="8" />
             <path d="M21 21l-4.35-4.35" />
             <line x1="11" y1="8" x2="11" y2="14" />
             <line x1="8" y1="11" x2="14" y2="11" />
+          </svg>
+        </button>
+
+        {/* Divider */}
+        <div className="w-px h-5 bg-white/10 self-center" />
+
+        {/* Fit to screen */}
+        <button
+          onClick={handleResetZoom}
+          title="Fit to screen"
+          className="group flex items-center justify-center w-9 h-9
+                     text-white/60 hover:text-white hover:bg-white/8
+                     transition-all duration-150 active:scale-90"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+            <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
+            <path d="M3 16v3a2 2 0 0 0 2 2h3" />
+            <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
           </svg>
         </button>
       </div>
