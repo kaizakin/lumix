@@ -13,6 +13,16 @@ export const PodVideoPage = () => {
     const [remoteStreams, setRemoteStreams] = useState<MediaStream[]>([]);
 
     const clientRef = useRef<any>(null);
+    const localStreamRef = useRef<MediaStream | null>(null);
+    const remoteStreamsRef = useRef<MediaStream[]>([]);
+
+    useEffect(() => {
+        localStreamRef.current = localStream;
+    }, [localStream]);
+
+    useEffect(() => {
+        remoteStreamsRef.current = remoteStreams;
+    }, [remoteStreams]);
 
     useEffect(() => {
         if (!podId || !session?.user?.id) return;
@@ -101,6 +111,7 @@ export const PodVideoPage = () => {
                 }
 
                 setLocalStream(stream);
+                localStreamRef.current = stream;
 
                 // IMPORTANT: Check if client is still OPEN before publishing
                 // But Ion SDK client doesn't expose readyState easily. 
@@ -122,6 +133,10 @@ export const PodVideoPage = () => {
                 clientRef.current.close?.();
                 clientRef.current = null;
             }
+            localStreamRef.current?.getTracks().forEach((t: MediaStreamTrack) => t.stop());
+            remoteStreamsRef.current.forEach((s) => s.getTracks().forEach((t) => t.stop()));
+            localStreamRef.current = null;
+            remoteStreamsRef.current = [];
             // Also clear remote streams? Usually good practice on unmount
             setRemoteStreams([]);
             setLocalStream(null);

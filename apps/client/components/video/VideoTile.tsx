@@ -10,26 +10,52 @@ interface VideoTileProps {
 
 export const VideoTile = ({ stream, isLocal, className, muted }: VideoTileProps) => {
     const videoRef = useRef<HTMLVideoElement>(null);
-    const [isMuted, setIsMuted] = useState(muted || isLocal);
+    const [isMuted, setIsMuted] = useState(Boolean(muted || isLocal));
 
     useEffect(() => {
-        if (videoRef.current && stream) {
-            videoRef.current.srcObject = stream;
-
-            const playPromise = videoRef.current.play();
-            if (playPromise !== undefined) {
-                playPromise
-                    .catch(e => {
-                        console.error(`[VideoTile] Autoplay failed for ${stream.id}`, e);
-                        // Fallback: Mute and try again (Browser Autoplay Policy)
-                        if (videoRef.current) {
-                            videoRef.current.muted = true;
-                            setIsMuted(true);
-                            videoRef.current.play().catch(console.error);
-                        }
-                    });
-            }
+        const nextMuted = Boolean(muted || isLocal);
+        setIsMuted(nextMuted);
+        if (videoRef.current) {
+            videoRef.current.muted = nextMuted;
         }
+    }, [isLocal, muted]);
+
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video || !stream) return;
+
+        let isDisposed = false;
+        video.srcObject = stream;
+
+        const playStream = async () => {
+            try {
+                await video.play();
+            } catch (e: any) {
+                const interrupted =
+                    e?.name === "AbortError" ||
+                    `${e?.message || ""}`.toLowerCase().includes("interrupted by a new load request");
+                if (isDisposed || interrupted) return;
+
+                console.error(`[VideoTile] Autoplay failed for ${stream.id}`, e);
+                // Fallback: mute and retry for browser autoplay policies.
+                video.muted = true;
+                setIsMuted(true);
+                try {
+                    await video.play();
+                } catch (retryError: any) {
+                    if (isDisposed || retryError?.name === "AbortError") return;
+                    console.error(`[VideoTile] Retry autoplay failed for ${stream.id}`, retryError);
+                }
+            }
+        };
+
+        void playStream();
+
+        return () => {
+            isDisposed = true;
+            video.pause();
+            video.srcObject = null;
+        };
     }, [stream]);
 
     const toggleMute = () => {
