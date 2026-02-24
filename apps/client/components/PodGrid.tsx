@@ -24,7 +24,9 @@ type getPodsResponse = {
 
 export function PodGrid() {
     const [view, setView] = useState<"grid" | "list">("grid");
-    const [podData, setPodData] = useState<getPodsResponse[]>([]);
+    const [tab, setTab] = useState<"created" | "joined">("created");
+    const [createdPods, setCreatedPods] = useState<getPodsResponse[]>([]);
+    const [joinedPods, setJoinedPods] = useState<getPodsResponse[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [loading, setLoading] = useState(true);
     const [searchFocused, setSearchFocused] = useState(false);
@@ -40,8 +42,9 @@ export function PodGrid() {
             return;
         }
 
-        const data: { podData: getPodsResponse[] } = await res.json();
-        setPodData(data.podData);
+        const data: { createdPods: getPodsResponse[]; joinedPods: getPodsResponse[] } = await res.json();
+        setCreatedPods(data.createdPods);
+        setJoinedPods(data.joinedPods);
         setLoading(false);
 
         console.log(data);
@@ -62,7 +65,9 @@ export function PodGrid() {
         fetchPods();
     }, [])
 
-    const updatedPodData = podData.map((pod) => ({
+    const activePods = tab === "created" ? createdPods : joinedPods;
+
+    const updatedPodData = activePods.map((pod) => ({
         ...pod,
         activeNow: 4,
         lastActive: timeAgo(pod.updatedAt.toString()),
@@ -71,7 +76,20 @@ export function PodGrid() {
 
     const filteredPods = updatedPodData.filter(pod =>
         pod.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        pod.description.toLowerCase().includes(searchQuery.toLowerCase())
+        (pod.description ?? "").toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const tabBtn = (label: string, value: "created" | "joined") => (
+        <Button
+            variant="ghost"
+            className={`relative text-primary hover:text-primary hover:bg-primary/10 transition-all ${tab === value ? "text-primary" : "text-muted-foreground"}`}
+            onClick={() => { setTab(value); setSearchQuery(""); }}
+        >
+            {label}
+            {tab === value && (
+                <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full" />
+            )}
+        </Button>
     );
 
     return (
@@ -100,16 +118,12 @@ export function PodGrid() {
                         </div>
                     </div>
                     <div className="flex items-center gap-1">
-                        <Button variant="ghost" className="text-primary hover:text-primary hover:bg-primary/10">
-                            Created
-                        </Button>
-                        <Button variant="ghost" className="text-primary hover:text-primary hover:bg-primary/10">
-                            Joined
-                        </Button>
+                        {tabBtn("Created", "created")}
+                        {tabBtn("Joined", "joined")}
                     </div>
                 </div>
 
-                {podData.length > 0 && (
+                {activePods.length > 0 && (
                     <div className={`relative transition-all duration-300 ease-out ${searchFocused ? 'scale-y-100' : 'scale-y-95 origin-top'}`}>
                         <Search className="absolute left-3 h-4 w-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
                         <Input
@@ -128,11 +142,17 @@ export function PodGrid() {
                 <div className="flex items-center justify-center py-12">
                     <Spinner />
                 </div>
-            ) : podData.length === 0 ? (
+            ) : activePods.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                     <Inbox className="h-12 w-12 text-muted-foreground/50 mb-3" />
-                    <h3 className="text-lg font-semibold text-foreground mb-1">No Pods Created</h3>
-                    <p className="text-sm text-muted-foreground mb-4">Get started by creating your first pod for collaborative brainstorming</p>
+                    <h3 className="text-lg font-semibold text-foreground mb-1">
+                        {tab === "created" ? "No Pods Created" : "No Pods Joined"}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                        {tab === "created"
+                            ? "Get started by creating your first pod for collaborative brainstorming"
+                            : "Join a pod using an invite link to collaborate with others"}
+                    </p>
                 </div>
             ) : filteredPods.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">

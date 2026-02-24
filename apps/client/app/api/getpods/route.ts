@@ -12,12 +12,19 @@ export async function GET() {
 
         const userId = session.user.id;
 
-        const podData = await prisma.pod.findMany({
-            where: { userId }
-        });
+        const [createdPods, joinedPods] = await Promise.all([
+            prisma.pod.findMany({
+                where: { userId },
+            }),
+            prisma.pod.findMany({
+                where: {
+                    members: { some: { id: userId } },
+                    NOT: { userId },
+                },
+            }),
+        ]);
 
-
-        return NextResponse.json({ podData });
+        return NextResponse.json({ createdPods, joinedPods });
 
     } catch (error) {
         console.error("Error in fetching pod data:", error);
