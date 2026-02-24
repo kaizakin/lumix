@@ -69,6 +69,7 @@ const MilkdownEditor: React.FC = () => {
     try {
       // Bind doc and awareness
       collabServiceRef.current.bindDoc(ydoc).setAwareness(awareness);
+      collabServiceRef.current.applyTemplate(DEFAULT_TEXT);
 
       // Connect
       collabServiceRef.current.connect();
