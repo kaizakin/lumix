@@ -8,7 +8,8 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@repo/db"], // askinig next.js to custom transpile this user written package.
   images: {
     domains: ["i.pravatar.cc", "media.tenor.com", "lh3.googleusercontent.com","avatars.githubusercontent.com"],
-  }
+  },
+  output: "standalone" // this tells it to output in stanaalone mode
 };
 
 export default nextConfig;
