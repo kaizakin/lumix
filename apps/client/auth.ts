@@ -8,6 +8,7 @@ import Google from "next-auth/providers/google"
 const nextAuth = NextAuth({
     adapter: PrismaAdapter(prisma),
     session: { strategy: "jwt" },
+    trustHost: process.env.AUTH_TRUST_HOST === "true",
     ...authConfig,
     callbacks: {
         ...authConfig.callbacks,

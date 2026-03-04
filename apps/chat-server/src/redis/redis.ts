@@ -1,19 +1,21 @@
 import { Redis } from "ioredis"
 let redis: Redis
 
-// use production redis if exists or use a local one.
-if (process.env.NODE_ENV == "production") {
-    if (process.env.REDIS_URL) {
-        redis = new Redis(process.env.REDIS_URL);
-    } else {
-        throw new Error("Redis URL not configured in production environment");
-    }
+const redisUrl = process.env.REDIS_URL;
+
+if (redisUrl) {
+    redis = new Redis(redisUrl);
 } else {
+    // Local fallback for non-containerized runs.
     redis = new Redis({
-        host: "localhost",
-        port: 6379
+        host: process.env.REDIS_HOST ?? "localhost",
+        port: Number(process.env.REDIS_PORT ?? 6379)
     })
-    console.log("using localhost redis!");
+    console.log(`Using redis fallback host ${process.env.REDIS_HOST ?? "localhost"}:${process.env.REDIS_PORT ?? 6379}`);
 }
+
+redis.on("error", (error) => {
+    console.error("[redis] connection error:", error.message);
+});
 
 export default redis;

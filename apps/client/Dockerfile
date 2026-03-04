@@ -34,7 +34,7 @@ RUN adduser --system --uid 1001 nextjs
 # copy built assets
 COPY --from=builder /app/apps/client/public ./apps/client/public
 COPY --from=builder /app/apps/client/.next/standalone ./
-COPY --from=builder /app/apps/client/.next/static ./.next/static
+COPY --from=builder /app/apps/client/.next/static ./apps/client/.next/static
 
 # tell container to start application as this user
 USER nextjs
@@ -45,4 +45,4 @@ ENV PORT=3000
 # this makes is accessible from anywhere
 ENV HOSTNAME="0.0.0.0" 
 
-CMD ["node", "server.js"]
+CMD ["node", "apps/client/server.js"]
