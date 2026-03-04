@@ -9,7 +9,7 @@ import { CanvasWrapper } from "./CanvasWrapper"
 
 export const PodCanvas = ()=>{
     const [isCanvasFullscreen, setIsCanvasFullscreen] = useState(false);
-    const [isCanvasCreated, setIsCanvasCreated] = useState(false);
+    const [isCanvasCreated, setIsCanvasCreated] = useState(true);
     return <div className="h-full w-full relative">
         <div className="absolute inset-4 bg-card/10 border border-border rounded-lg shadow-sm overflow-hidden">
            <div className="flex items-center justify-between p-3 border-b border-border bg-muted/50">

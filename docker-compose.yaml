@@ -1,0 +1,63 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: lumix-postgres
+    environment:
+      POSTGRES_USER: lumix
+      POSTGRES_PASSWORD: lumix_password
+      POSTGRES_DB: lumix
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - lumix-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: lumix-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - lumix-network
+
+  chat-server:
+    build:
+      context: .
+      dockerfile: apps/chat-server/Dockerfile
+    container_name: lumix-chat-server
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://lumix:lumix_password@postgres:5432/lumix
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - lumix-network
+
+  client:
+    build:
+      context: .
+      dockerfile: apps/client/Dockerfile
+    container_name: lumix-client
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://lumix:lumix_password@postgres:5432/lumix
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - chat-server
+    networks:
+      - lumix-network
+
+volumes:
+  postgres_data:
+
+networks:
+  lumix-network:
+    driver: bridge

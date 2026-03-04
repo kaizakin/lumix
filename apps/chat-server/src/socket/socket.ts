@@ -8,6 +8,7 @@ import * as Y from "yjs";
 // Redis cache expiry time (24 hours)
 const CACHE_EXPIRY = 60 * 60 * 24;
 const EDITOR_PERSIST_DEBOUNCE_MS = 1200;
+const CANVAS_PERSIST_DEBOUNCE_MS = 1200;
 
 interface CustomSocket extends Socket {
     pod?: string;
@@ -19,8 +20,10 @@ interface FetchMessagesData {
 }
 
 const docs = new Map<string, Y.Doc>();
+const canvasSnapshots = new Map<string, unknown[]>();
 const DEBUG_EDITOR_SYNC = process.env.DEBUG_EDITOR_SYNC === "1";
 const editorPersistTimers = new Map<string, NodeJS.Timeout>();
+const canvasPersistTimers = new Map<string, NodeJS.Timeout>();
 
 function normalizeYjsUpdate(update: unknown): Uint8Array | null {
     if (!update) return null;
@@ -41,6 +44,18 @@ function getPodIdFromEditorRoom(roomId: string): string | null {
     if (!roomId.startsWith("editor:")) return null;
     const podId = roomId.slice("editor:".length).trim();
     return podId || null;
+}
+
+function getPodIdFromCanvasRoom(roomId: string): string | null {
+    if (!roomId.startsWith("canvas:")) return null;
+    const podId = roomId.slice("canvas:".length).trim();
+    return podId || null;
+}
+
+function normalizeCanvasSnapshotPayload(payload: unknown): unknown[] | null {
+    if (!Array.isArray(payload)) return null;
+    const normalized = payload.filter((shape) => shape && typeof shape === "object");
+    return normalized;
 }
 
 async function loadPersistedEditorState(podId: string): Promise<Uint8Array | null> {
@@ -70,6 +85,32 @@ async function persistEditorState(podId: string, doc: Y.Doc): Promise<void> {
     );
 }
 
+async function loadPersistedCanvasState(podId: string): Promise<unknown[] | null> {
+    try {
+        const rows = await prisma.$queryRawUnsafe<Array<{ canvas_state: unknown }>>(
+            `SELECT "canvas_state" FROM "canvas_documents" WHERE "pod_id" = $1 LIMIT 1`,
+            podId,
+        );
+        const state = rows[0]?.canvas_state;
+        if (!Array.isArray(state)) return null;
+        return state;
+    } catch (error) {
+        console.error(`[canvas] failed loading persisted state for pod ${podId}`, error);
+        return null;
+    }
+}
+
+async function persistCanvasState(podId: string, snapshot: unknown[]): Promise<void> {
+    await prisma.$executeRawUnsafe(
+        `INSERT INTO "canvas_documents" ("pod_id", "canvas_state", "updated_at")
+         VALUES ($1, $2::jsonb, NOW())
+         ON CONFLICT ("pod_id")
+         DO UPDATE SET "canvas_state" = EXCLUDED."canvas_state", "updated_at" = NOW()`,
+        podId,
+        JSON.stringify(snapshot),
+    );
+}
+
 function scheduleEditorPersist(roomId: string, doc: Y.Doc): void {
     const podId = getPodIdFromEditorRoom(roomId);
     if (!podId) return;
@@ -91,6 +132,26 @@ function scheduleEditorPersist(roomId: string, doc: Y.Doc): void {
     }, EDITOR_PERSIST_DEBOUNCE_MS);
 
     editorPersistTimers.set(roomId, timer);
+}
+
+function scheduleCanvasPersist(roomId: string, snapshot: unknown[]): void {
+    const podId = getPodIdFromCanvasRoom(roomId);
+    if (!podId) return;
+
+    const previousTimer = canvasPersistTimers.get(roomId);
+    if (previousTimer) clearTimeout(previousTimer);
+
+    const timer = setTimeout(async () => {
+        try {
+            await persistCanvasState(podId, snapshot);
+        } catch (error) {
+            console.error(`[canvas] failed persisting pod ${podId}`, error);
+        } finally {
+            canvasPersistTimers.delete(roomId);
+        }
+    }, CANVAS_PERSIST_DEBOUNCE_MS);
+
+    canvasPersistTimers.set(roomId, timer);
 }
 
 
@@ -281,6 +342,34 @@ export function SetupSocket(io: Server): void {
             editorUpdateHandlers.set(roomId, yjsHandler);
 
             socket.on("yjs-update", yjsHandler);
+        });
+
+        socket.on("join-canvas", async (roomId: string) => {
+            socket.join(roomId);
+            let snapshot = canvasSnapshots.get(roomId);
+            if (!snapshot) {
+                const podId = getPodIdFromCanvasRoom(roomId);
+                if (podId) {
+                    const persisted = await loadPersistedCanvasState(podId);
+                    snapshot = persisted ?? [];
+                } else {
+                    snapshot = [];
+                }
+                canvasSnapshots.set(roomId, snapshot);
+            }
+            socket.emit("canvas-state", snapshot);
+        });
+
+        socket.on("canvas-update", (payload: unknown) => {
+            if (!payload || typeof payload !== "object") return;
+            const data = payload as { roomId?: string; snapshot?: unknown };
+            if (typeof data.roomId !== "string") return;
+            const snapshot = normalizeCanvasSnapshotPayload(data.snapshot);
+            if (!snapshot) return;
+
+            canvasSnapshots.set(data.roomId, snapshot);
+            socket.to(data.roomId).emit("canvas-state", snapshot);
+            scheduleCanvasPersist(data.roomId, snapshot);
         });
 
         socket.on("disconnect", () => {

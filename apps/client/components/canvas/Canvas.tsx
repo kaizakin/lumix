@@ -17,10 +17,13 @@ import { RoughText } from '@/lib/shapes/RoughText';
 import { ERASER_CONFIG } from '@/utils/constants';
 import { ZOOM_CONFIG } from '@/utils/constants';
 import { eraseShapeAtPoint } from '@/utils/canvashelpers/shapeHelpers';
+import { usePodSocket } from '@/components/providers/PodSocketProvider';
+import { applyCanvasSnapshot, normalizeCanvasSnapshot, serializeCanvasLayer } from '@/utils/canvashelpers/collab';
 
 type RoughShape = RoughRectangle | RoughEllipse | RoughDiamond | RoughArrow | RoughLine | RoughPencil | RoughText | null;
 
 export function Canvas() {
+  const { socket, isConnected, podId } = usePodSocket();
   const {
     tool,
     setTool,
@@ -56,6 +59,27 @@ export function Canvas() {
   const [stageScale, setStageScale] = useState(1);
   const [isPanning, setIsPanning] = useState(false);
   const lastPanPosRef = useRef({ x: 0, y: 0 });
+  const joinedCanvasRoomRef = useRef<string | null>(null);
+  const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const applyingRemoteSnapshotRef = useRef(false);
+
+  const scheduleCanvasSync = (delay = 80) => {
+    if (!socket || !isConnected || !podId || !layerRef.current) return;
+    if (applyingRemoteSnapshotRef.current) return;
+
+    if (syncTimerRef.current) {
+      clearTimeout(syncTimerRef.current);
+    }
+
+    syncTimerRef.current = setTimeout(() => {
+      if (!layerRef.current || !socket || !isConnected) return;
+      const snapshot = serializeCanvasLayer(layerRef.current);
+      socket.emit("canvas-update", {
+        roomId: `canvas:${podId}`,
+        snapshot,
+      });
+    }, delay);
+  };
 
 
   useEffect(() => {
@@ -81,7 +105,13 @@ export function Canvas() {
 
     handleResize();
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (syncTimerRef.current) {
+        clearTimeout(syncTimerRef.current);
+        syncTimerRef.current = null;
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -113,6 +143,32 @@ export function Canvas() {
       });
     }
   }, [tool, isPanning]);
+
+  useEffect(() => {
+    if (!isMounted || !socket || !isConnected || !podId || !layerRef.current) return;
+
+    const roomId = `canvas:${podId}`;
+    const joinKey = `${socket.id ?? "no-socket"}:${roomId}`;
+    if (joinedCanvasRoomRef.current !== joinKey) {
+      socket.emit("join-canvas", roomId);
+      joinedCanvasRoomRef.current = joinKey;
+    }
+
+    const onCanvasState = (payload: unknown) => {
+      const snapshot = normalizeCanvasSnapshot(payload);
+      if (!layerRef.current) return;
+      applyingRemoteSnapshotRef.current = true;
+      applyCanvasSnapshot(layerRef.current, snapshot);
+      setSelectedShapeId(null);
+      applyingRemoteSnapshotRef.current = false;
+    };
+
+    socket.on("canvas-state", onCanvasState);
+
+    return () => {
+      socket.off("canvas-state", onCanvasState);
+    };
+  }, [isMounted, socket, isConnected, podId, setSelectedShapeId]);
 
   // Handle selection and Transformer
   useEffect(() => {
@@ -244,6 +300,7 @@ export function Canvas() {
       const transform = stage.getAbsoluteTransform().copy().invert();
       const adjustedPos = transform.point(pos);
       eraseShapeAtPoint(adjustedPos.x, adjustedPos.y, layerRef as React.RefObject<Konva.Layer>, erasedShapesRef);
+      scheduleCanvasSync(250);
       return;
     }
 
@@ -432,6 +489,7 @@ export function Canvas() {
       // If erasing (mouse down), erase shapes under cursor
       if (isErasing) {
         eraseShapeAtPoint(adjustedPos.x, adjustedPos.y, layerRef as React.RefObject<Konva.Layer>, erasedShapesRef);
+        scheduleCanvasSync(180);
       }
       return;
     }
@@ -491,6 +549,7 @@ export function Canvas() {
     }
 
     layerRef.current?.batchDraw();// Redraw yourself, but do it efficiently, batching multiple updates together.
+    scheduleCanvasSync(90);
   };
 
   const handleMouseUp = () => {
@@ -520,6 +579,8 @@ export function Canvas() {
     if (tool !== ToolType.TEXT) {
       currentShapeRef.current = null;
     }
+
+    scheduleCanvasSync(30);
   };
 
   const handleMouseLeave = () => {
@@ -559,6 +620,7 @@ export function Canvas() {
         }
       }
     }
+    scheduleCanvasSync(30);
   };
 
   const handleTextSubmit = (text: string) => {
@@ -585,6 +647,7 @@ export function Canvas() {
 
     setIsEditingText(false);
     currentShapeRef.current = null;
+    scheduleCanvasSync(30);
   };
 
   const autoGrow = () => { // adjust the size of the textarea as the mf types.
@@ -695,6 +758,7 @@ export function Canvas() {
         onMouseLeave={handleMouseLeave}
         onWheel={handleWheel}
         draggable={false}
+        onDragEnd={() => scheduleCanvasSync(30)}
       >
         <Layer ref={layerRef}>
           {/* Custom eraser cursor */}

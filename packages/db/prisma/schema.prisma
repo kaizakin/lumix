@@ -88,8 +88,20 @@ model Pod {
   chatGroup   ChatGroup?
   files       PodFile[]
   editorDoc   EditorDocument?
+  canvasDoc   CanvasDocument?
 
   @@map("pods")
+}
+
+model CanvasDocument {
+  podId       String   @id @map("pod_id") @db.Uuid
+  canvasState Json     @map("canvas_state") @db.JsonB
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
+
+  pod Pod @relation(fields: [podId], references: [id], onDelete: Cascade)
+
+  @@map("canvas_documents")
 }
 
 model EditorDocument {
