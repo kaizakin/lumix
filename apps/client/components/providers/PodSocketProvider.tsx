@@ -4,6 +4,7 @@ import { getSocket } from "@/lib/socket.config";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Socket } from "socket.io-client"
 import { useSession } from "next-auth/react"
+const DEBUG_EDITOR_SYNC = process.env.NEXT_PUBLIC_DEBUG_EDITOR_SYNC === "1";
 
 interface podSocketContextType {
     socket: Socket | null;
@@ -28,35 +29,49 @@ export function PodSocketProvider({ podId, children }: { podId: string, children
     const userId = session?.user?.id;
 
     useEffect(() => {
-        if (session && !userId) return; // Wait for session to load if possible, or handle guest
+        if (session && !userId) return;
 
-        socket.auth = { pod: podId, userId }
+        const previousAuth = socket.auth as { pod?: string; userId?: string } | undefined;
+        const authChanged =
+            previousAuth?.pod !== podId ||
+            previousAuth?.userId !== userId;
 
-        if (!socket.connected) {
-            socket.connect();
-        }
+        socket.auth = { pod: podId, userId };
 
         function onConnect() {
-            setIsConnected(true)
+            setIsConnected(true);
         }
 
         function onDisconnect() {
-            setIsConnected(false)
+            setIsConnected(false);
+        }
+        function onConnectError(error: Error) {
+            if (DEBUG_EDITOR_SYNC) {
+                console.error("[socket-debug] connect_error", error.message);
+            }
         }
 
         socket.on("connect", onConnect);
-        socket.on("disconnect", onDisconnect)
+        socket.on("disconnect", onDisconnect);
+        socket.on("connect_error", onConnectError);
+
+        if (!socket.connected || authChanged) {
+            if (socket.connected && authChanged) {
+                socket.disconnect();
+            }
+            socket.connect();
+        }
+
+        setIsConnected(socket.connected);
 
         return () => {
             socket.off("connect", onConnect);
             socket.off("disconnect", onDisconnect);
+            socket.off("connect_error", onConnectError);
 
-            if (socket.connected) {
-                socket.disconnect();
-            }
         }
 
-    }, [podId])
+    }, [podId, userId, socket])
 
     return <podSocketContext.Provider value={{ socket, isConnected, podId }}>
         {children}

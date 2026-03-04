@@ -7,7 +7,10 @@ const createPrismaClient = () => {
   // pool using the POOLED URL (DATABASE_URL)
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    max: 2 //pool size for serverless 
+    max: 2, //pool size for serverless 
+    ssl: {
+      rejectUnauthorized: false // This ignores the self-signed error
+    }
   })
 
   const adapter = new PrismaPg(pool)

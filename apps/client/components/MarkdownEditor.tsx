@@ -51,10 +51,27 @@ console.log(greeting);
 
 Start capturing your ideas here!
 `;
+const DEBUG_EDITOR_SYNC = process.env.NEXT_PUBLIC_DEBUG_EDITOR_SYNC === "1";
+
+function normalizeYjsUpdate(update: unknown): Uint8Array | null {
+  if (!update) return null;
+  if (update instanceof Uint8Array) return update;
+  if (Array.isArray(update)) return Uint8Array.from(update);
+  if (update instanceof ArrayBuffer) return new Uint8Array(update);
+  if (typeof update === "object") {
+    const maybeBuffer = update as { type?: string; data?: number[] };
+    if (maybeBuffer.type === "Buffer" && Array.isArray(maybeBuffer.data)) {
+      return Uint8Array.from(maybeBuffer.data);
+    }
+  }
+  return null;
+}
 
 const MilkdownEditor: React.FC = () => {
-  const { socket, isConnected } = usePodSocket();
+  const { socket, isConnected, podId } = usePodSocket();
   const collabServiceRef = useRef<any>(null); // Using any to avoid complex type imports for now
+  const joinedRoomRef = useRef<string | null>(null);
+  const templateAppliedRef = useRef(false);
   const [editorReady, setEditorReady] = useState(false);
 
   const { ydoc, awareness } = useMemo(() => {
@@ -64,12 +81,15 @@ const MilkdownEditor: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    templateAppliedRef.current = false;
+  }, [podId]);
+
+  useEffect(() => {
     if (!socket || !isConnected || !editorReady || !collabServiceRef.current) return;
 
     try {
       // Bind doc and awareness
       collabServiceRef.current.bindDoc(ydoc).setAwareness(awareness);
-      collabServiceRef.current.applyTemplate(DEFAULT_TEXT);
 
       // Connect
       collabServiceRef.current.connect();
@@ -81,28 +101,66 @@ const MilkdownEditor: React.FC = () => {
     // Existing Socket Logic
     console.log("Joining editor room. Socket ID:", socket.id);
 
-    function onYjsUpdate(update: Uint8Array) {
-      // console.log("Received yjs-update from server", update.byteLength);
-      const uint8Update = new Uint8Array(update);
-      Y.applyUpdate(ydoc, uint8Update, "remote");
+    function onYjsUpdate(update: unknown) {
+      const normalized = normalizeYjsUpdate(update);
+      if (!normalized) return;
+      try {
+        Y.applyUpdate(ydoc, normalized, "remote");
+        if (DEBUG_EDITOR_SYNC) {
+          console.log("[editor-debug] received yjs-update", { bytes: normalized.byteLength, roomId });
+        }
+      } catch (error) {
+        console.error("[editor-debug] failed applying remote yjs update", error);
+      }
     }
 
     function onDocUpdate(update: Uint8Array, origin: any) {
       if (origin === "remote") return;
-      // console.log("Local ydoc updated, emitting to server", update.byteLength);
-      socket?.emit("yjs-update", update)
+      socket?.timeout(3000).emit("yjs-update", Array.from(update), (err: unknown, response: any) => {
+        if (DEBUG_EDITOR_SYNC) {
+          if (err) {
+            console.error("[editor-debug] emit yjs-update timeout/error", err);
+          } else {
+            console.log("[editor-debug] server ack for yjs-update", response);
+          }
+        }
+      });
     }
 
-    socket.emit("join-editor", "room-1")
+    const roomId = `editor:${podId ?? "default"}`;
+    const onEditorDebug = (payload: unknown) => {
+      if (DEBUG_EDITOR_SYNC) {
+        console.log("[editor-debug] server event", payload);
+      }
+      if (
+        typeof payload === "object" &&
+        payload !== null &&
+        "phase" in payload &&
+        "isNewDoc" in payload
+      ) {
+        const event = payload as { phase?: string; isNewDoc?: boolean };
+        if (event.phase === "join" && event.isNewDoc && !templateAppliedRef.current) {
+          collabServiceRef.current?.applyTemplate(DEFAULT_TEXT);
+          templateAppliedRef.current = true;
+        }
+      }
+    };
+    const joinKey = `${socket.id ?? "no-socket"}:${roomId}`;
+    if (joinedRoomRef.current !== joinKey) {
+      socket.emit("join-editor", roomId);
+      joinedRoomRef.current = joinKey;
+    }
     socket.on("yjs-update", onYjsUpdate)
+    socket.on("editor-debug", onEditorDebug);
     ydoc.on("update", onDocUpdate)
 
     return () => {
       collabServiceRef.current?.disconnect();
       socket.off("yjs-update", onYjsUpdate);
+      socket.off("editor-debug", onEditorDebug);
       ydoc.off("update", onDocUpdate);
     }
-  }, [socket, isConnected, editorReady, ydoc, awareness])
+  }, [socket, isConnected, podId, editorReady, ydoc, awareness])
 
   useEditor((root) =>
     Editor.make()

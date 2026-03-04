@@ -3,7 +3,6 @@
 import { MessageSquare, Calendar, FolderOpen, X } from "lucide-react";
 import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
-import { PodSidebarSchedule } from "./PodSidebarSchedule";
 import { PodSidebarFiles } from "./PodSidebarFiles";
 
 interface PodSideBarProps {

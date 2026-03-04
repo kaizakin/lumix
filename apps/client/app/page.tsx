@@ -52,11 +52,6 @@ export default function Home() {
                 </Link>
                 <GithubButton />
               </div>
-
-              <div className="pt-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-                <p className="text-xs uppercase tracking-widest text-neutral-400 font-medium">Trusted by thinkers at</p>
-              </div>
-
             </div>
           </main>
 

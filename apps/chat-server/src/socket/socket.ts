@@ -18,7 +18,22 @@ interface FetchMessagesData {
 }
 
 const docs = new Map<string, Y.Doc>();
-let yjshandler: ((update: Uint8Array) => void) | null = null
+const DEBUG_EDITOR_SYNC = process.env.DEBUG_EDITOR_SYNC === "1";
+
+function normalizeYjsUpdate(update: unknown): Uint8Array | null {
+    if (!update) return null;
+    if (update instanceof Uint8Array) return update;
+    if (Array.isArray(update)) return Uint8Array.from(update);
+    if (update instanceof ArrayBuffer) return new Uint8Array(update);
+    if (typeof Buffer !== "undefined" && Buffer.isBuffer(update)) return new Uint8Array(update);
+    if (typeof update === "object") {
+        const maybeBuffer = update as { type?: string; data?: number[] };
+        if (maybeBuffer.type === "Buffer" && Array.isArray(maybeBuffer.data)) {
+            return Uint8Array.from(maybeBuffer.data);
+        }
+    }
+    return null;
+}
 
 
 function formatMessage(msg: ChatMessageDBRecord): ChatMessage {
@@ -79,6 +94,8 @@ export function SetupSocket(io: Server): void {
     })
 
     io.on("connection", (socket: CustomSocket) => {
+        const editorUpdateHandlers = new Map<string, (update: Uint8Array) => void>();
+
         if (socket.pod) {
             socket.join(socket.pod);
             console.log(`Socket ${socket.id} joined room ${socket.pod}`);
@@ -147,32 +164,63 @@ export function SetupSocket(io: Server): void {
             console.log(`Socket ${socket.id} joined YJS editor: ${roomId}`);
 
             let doc = docs.get(roomId);
+            let isNewDoc = false;
             if (!doc) {
                 doc = new Y.Doc();
                 docs.set(roomId, doc);
+                isNewDoc = true;
             }
 
             // send initial state
             const update = Y.encodeStateAsUpdate(doc);
-            socket.emit("yjs-update", update);
+            socket.emit("yjs-update", Array.from(update));
+            socket.emit("editor-debug", {
+                phase: "join",
+                roomId,
+                socketId: socket.id,
+                initialBytes: update.byteLength,
+                isNewDoc,
+            });
 
-            // remove previous listener to avoid stacking if joining new room
-            // for example user switching pods
-            // socket.removeAllListeners("yjs-update");
-            if (yjshandler) {
-                socket.off("yjs-update", yjshandler); // remove old one
+            const previousHandler = editorUpdateHandlers.get(roomId);
+            if (previousHandler) {
+                socket.off("yjs-update", previousHandler);
             }
 
-            yjshandler = (update: Uint8Array) => {
-                Y.applyUpdate(doc!, update);
-                console.log("update event", update);
-                socket.to(roomId).emit("yjs-update", update);
-            }
+            const yjsHandler = (update: unknown, ack?: (data: unknown) => void) => {
+                const normalized = normalizeYjsUpdate(update);
+                if (!normalized) {
+                    if (DEBUG_EDITOR_SYNC) {
+                        console.log(`[editor] invalid update payload from ${socket.id} in ${roomId}`);
+                    }
+                    ack?.({ ok: false, reason: "invalid-payload" });
+                    return;
+                }
+                Y.applyUpdate(doc!, normalized);
+                socket.to(roomId).emit("yjs-update", Array.from(normalized));
+                const roomSize = io.sockets.adapter.rooms.get(roomId)?.size ?? 0;
+                socket.emit("editor-debug", {
+                    phase: "forwarded",
+                    roomId,
+                    bytes: normalized.byteLength,
+                    peers: Math.max(roomSize - 1, 0),
+                });
+                if (DEBUG_EDITOR_SYNC) {
+                    console.log(`[editor] ${socket.id} -> ${roomId}: ${normalized.byteLength} bytes, peers=${Math.max(roomSize - 1, 0)}`);
+                }
+                ack?.({ ok: true, roomId, bytes: normalized.byteLength, peers: Math.max(roomSize - 1, 0) });
+            };
 
-            socket.on("yjs-update", yjshandler);
+            editorUpdateHandlers.set(roomId, yjsHandler);
+
+            socket.on("yjs-update", yjsHandler);
         });
 
         socket.on("disconnect", () => {
+            for (const handler of editorUpdateHandlers.values()) {
+                socket.off("yjs-update", handler);
+            }
+            editorUpdateHandlers.clear();
             console.log(`client with socketId ${socket.id} disconnected`);
         });
     });
