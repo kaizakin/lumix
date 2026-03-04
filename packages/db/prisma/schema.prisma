@@ -87,8 +87,20 @@ model Pod {
   invite      Invite?
   chatGroup   ChatGroup?
   files       PodFile[]
+  editorDoc   EditorDocument?
 
   @@map("pods")
+}
+
+model EditorDocument {
+  podId     String   @id @map("pod_id") @db.Uuid
+  yjsState  Bytes    @map("yjs_state") @db.ByteA
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  pod Pod @relation(fields: [podId], references: [id], onDelete: Cascade)
+
+  @@map("editor_documents")
 }
 
 model ChatGroup {

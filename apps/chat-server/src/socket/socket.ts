@@ -7,6 +7,7 @@ import * as Y from "yjs";
 
 // Redis cache expiry time (24 hours)
 const CACHE_EXPIRY = 60 * 60 * 24;
+const EDITOR_PERSIST_DEBOUNCE_MS = 1200;
 
 interface CustomSocket extends Socket {
     pod?: string;
@@ -19,6 +20,7 @@ interface FetchMessagesData {
 
 const docs = new Map<string, Y.Doc>();
 const DEBUG_EDITOR_SYNC = process.env.DEBUG_EDITOR_SYNC === "1";
+const editorPersistTimers = new Map<string, NodeJS.Timeout>();
 
 function normalizeYjsUpdate(update: unknown): Uint8Array | null {
     if (!update) return null;
@@ -33,6 +35,62 @@ function normalizeYjsUpdate(update: unknown): Uint8Array | null {
         }
     }
     return null;
+}
+
+function getPodIdFromEditorRoom(roomId: string): string | null {
+    if (!roomId.startsWith("editor:")) return null;
+    const podId = roomId.slice("editor:".length).trim();
+    return podId || null;
+}
+
+async function loadPersistedEditorState(podId: string): Promise<Uint8Array | null> {
+    try {
+        const rows = await prisma.$queryRawUnsafe<Array<{ yjs_state: Buffer | null }>>(
+            `SELECT "yjs_state" FROM "editor_documents" WHERE "pod_id" = $1 LIMIT 1`,
+            podId,
+        );
+        const state = rows[0]?.yjs_state;
+        if (!state || state.length === 0) return null;
+        return new Uint8Array(state);
+    } catch (error) {
+        console.error(`[editor] failed loading persisted state for pod ${podId}`, error);
+        return null;
+    }
+}
+
+async function persistEditorState(podId: string, doc: Y.Doc): Promise<void> {
+    const state = Y.encodeStateAsUpdate(doc);
+    await prisma.$executeRawUnsafe(
+        `INSERT INTO "editor_documents" ("pod_id", "yjs_state", "updated_at")
+         VALUES ($1, $2, NOW())
+         ON CONFLICT ("pod_id")
+         DO UPDATE SET "yjs_state" = EXCLUDED."yjs_state", "updated_at" = NOW()`,
+        podId,
+        Buffer.from(state),
+    );
+}
+
+function scheduleEditorPersist(roomId: string, doc: Y.Doc): void {
+    const podId = getPodIdFromEditorRoom(roomId);
+    if (!podId) return;
+
+    const previousTimer = editorPersistTimers.get(roomId);
+    if (previousTimer) clearTimeout(previousTimer);
+
+    const timer = setTimeout(async () => {
+        try {
+            await persistEditorState(podId, doc);
+            if (DEBUG_EDITOR_SYNC) {
+                console.log(`[editor] persisted pod ${podId}`);
+            }
+        } catch (error) {
+            console.error(`[editor] failed persisting pod ${podId}`, error);
+        } finally {
+            editorPersistTimers.delete(roomId);
+        }
+    }, EDITOR_PERSIST_DEBOUNCE_MS);
+
+    editorPersistTimers.set(roomId, timer);
 }
 
 
@@ -159,7 +217,7 @@ export function SetupSocket(io: Server): void {
             }
         });
 
-        socket.on("join-editor", (roomId: string) => {
+        socket.on("join-editor", async (roomId: string) => {
             socket.join(roomId);
             console.log(`Socket ${socket.id} joined YJS editor: ${roomId}`);
 
@@ -169,6 +227,14 @@ export function SetupSocket(io: Server): void {
                 doc = new Y.Doc();
                 docs.set(roomId, doc);
                 isNewDoc = true;
+                const podId = getPodIdFromEditorRoom(roomId);
+                if (podId) {
+                    const persistedState = await loadPersistedEditorState(podId);
+                    if (persistedState) {
+                        Y.applyUpdate(doc, persistedState, "db");
+                        isNewDoc = false;
+                    }
+                }
             }
 
             // send initial state
@@ -198,6 +264,7 @@ export function SetupSocket(io: Server): void {
                 }
                 Y.applyUpdate(doc!, normalized);
                 socket.to(roomId).emit("yjs-update", Array.from(normalized));
+                scheduleEditorPersist(roomId, doc!);
                 const roomSize = io.sockets.adapter.rooms.get(roomId)?.size ?? 0;
                 socket.emit("editor-debug", {
                     phase: "forwarded",
