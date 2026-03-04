@@ -1,5 +1,5 @@
 # Stage 1: Dependencies
-FROM node:18-alpine AS deps
+FROM node:20-alpine AS builder
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
@@ -15,13 +15,6 @@ COPY packages/typescript-config/package.json ./packages/typescript-config/
 
 RUN pnpm install --frozen-lockfile
 
-# stage 2: Builder
-FROM node:18-alpine AS builder
-
-WORKDIR /app
-RUN npm install -g pnpm@10.19.0
-
-COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 RUN pnpm --filter @repo/db build
@@ -29,7 +22,7 @@ RUN pnpm --filter @repo/db build
 RUN pnpm --filter client build
 
 # Stage 3: Runner
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1

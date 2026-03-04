@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react"
 import { useEffect, useRef, useState } from "react"
 import { VideoTile } from "./VideoTile";
 import { useMediaStore } from "@/store/useMediaStore";
-import { MicOff } from "lucide-react";
+import { MicOff, VideoOff } from "lucide-react";
 
 function resolveSfuSignalUrl(): string {
     const configured = process.env.NEXT_PUBLIC_SFU_WS_URL;
@@ -182,45 +182,60 @@ export const PodVideoPage = () => {
     }, [isCameraOn]);
 
     // calculate grid columns based on total participants
-    const totalParticipants = (localStream ? 1 : 0) + remoteStreams.length;
+    const showLocalTile = true;
+    const totalParticipants = (showLocalTile ? 1 : 0) + remoteStreams.length;
 
     // Simple dynamic grid class calculation
     const getGridClass = (count: number) => {
         if (count <= 1) return "grid-cols-1";
-        if (count === 2) return "grid-cols-2";
-        if (count <= 4) return "grid-cols-2 md:grid-cols-2";
+        if (count === 2) return "grid-cols-1 md:grid-cols-2";
+        if (count <= 4) return "grid-cols-1 md:grid-cols-2";
         if (count <= 6) return "grid-cols-2 md:grid-cols-3";
         return "grid-cols-2 md:grid-cols-4";
     };
 
-    return (
-        <div className="flex flex-col h-[calc(100vh-64px)] bg-black p-4">
-            <div className={`grid gap-4 w-full h-full content-center ${getGridClass(totalParticipants)}`}>
+    const getTileClass = (count: number) =>
+        count === 1
+            ? "w-full max-w-[980px] aspect-video mx-auto"
+            : "w-full aspect-video max-h-[44vh]";
 
-                {localStream && (
-                    isCameraOn ? (
+        const initial =
+        (session?.user?.name?.trim()?.[0] ||
+            session?.user?.email?.trim()?.[0] ||
+            "Y").toUpperCase();
+
+    return (
+        <div className="flex flex-col h-full bg-black p-4 overflow-auto">
+            <div className="flex-1 flex items-center justify-center">
+                <div className={`grid gap-4 w-full max-w-[1400px] ${getGridClass(totalParticipants)}`}>
+
+                {showLocalTile && (
+                    isCameraOn && localStream ? (
                         <VideoTile
                             stream={localStream}
                             isLocal={true}
-                            className={totalParticipants === 1 ? "max-h-[80vh] aspect-video mx-auto" : ""}
+                            className={getTileClass(totalParticipants)}
                         />
                     ) : (
                         <div
-                            className={`relative overflow-hidden rounded-xl bg-zinc-900 border border-zinc-700 shadow-md flex items-center justify-center ${
-                                totalParticipants === 1
-                                    ? "max-h-[80vh] aspect-video mx-auto w-full p-8"
-                                    : "w-full h-full min-h-[260px] aspect-video p-6"
-                            }`}
+                            className={`relative overflow-hidden rounded-xl bg-zinc-900 border h-40 w-60 border-zinc-700 shadow-md flex items-center justify-center p-6 ${getTileClass(totalParticipants)}`}
                         >
-                            <div className="flex flex-col items-center gap-3 text-zinc-200">
-                                <p className="text-base">Your video is off</p>
-                                {!isMicOn && (
-                                    <p className="text-sm text-zinc-400 flex items-center gap-1.5">
-                                        <MicOff className="h-4 w-4" />
-                                        Microphone off
-                                    </p>
-                                )}
+                            <div className="flex flex-col items-center gap-4 text-zinc-200">
+                                <div className="h-10 w-10 rounded-full bg-zinc-700 text-zinc-100 grid place-items-center text-3xl font-semibold select-none">
+                                    {initial}
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-zinc-300">
+                                    <VideoOff className="h-4 w-4" />
+                                    <span>{isCameraOn ? "Starting camera..." : "Camera is off"}</span>
+                                </div>
                             </div>
+
+                            {!isMicOn && (
+                                <div className="absolute bottom-3 right-3 h-8 w-8 rounded-full bg-red-600 text-white grid place-items-center shadow-md">
+                                    <MicOff className="h-4 w-4" />
+                                </div>
+                            )}
+
                             <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded text-xs text-white">
                                 You
                             </div>
@@ -233,7 +248,7 @@ export const PodVideoPage = () => {
                         key={stream.id}
                         stream={stream}
                         isLocal={false}
-                        className={totalParticipants === 1 ? "max-h-[80vh] aspect-video mx-auto" : ""}
+                        className={getTileClass(totalParticipants)}
                     />
                 ))}
 
@@ -242,6 +257,7 @@ export const PodVideoPage = () => {
                         Waiting for camera...
                     </div>
                 )}
+                </div>
             </div>
         </div>
     );
