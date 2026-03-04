@@ -15,6 +15,7 @@ import { createJoinCode } from "@/actions/CreateJoinCode";
 import { useParams } from "next/navigation";
 import { Modal } from "@/components/Modal";
 import { usePod } from "@/hooks/usePod";
+import { useMediaStore } from "@/store/useMediaStore";
 
 import { PodSettings } from "@/components/PodSettings";
 import { PodSocketProvider } from "@/components/providers/PodSocketProvider";
@@ -24,8 +25,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     const podId = params.podid as string;
     const tab = useTabStore((s) => s.currentTab);
     const isMobile = useIsMobile();
-    const [iscameraOn, setIscamerOn] = useState(false);
-    const [isMicOn, setIsMicOn] = useState(false);
+    const isCameraOn = useMediaStore((s) => s.isCameraOn);
+    const isMicOn = useMediaStore((s) => s.isMicOn);
+    const toggleCamera = useMediaStore((s) => s.toggleCamera);
+    const toggleMic = useMediaStore((s) => s.toggleMic);
     const [isSidebarOpen, setIsSideBarOpen] = useState(false);
     const [code, setCode] = useState("Wait");
     const [shareOpen, setShareOpen] = useState(false);
@@ -146,22 +149,16 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                                 <Button variant={isMicOn ? "default" : "destructive"}
                                     size={"sm"}
                                     className="cursor-pointer"
-                                    onClick={() => setIsMicOn(!isMicOn)}
+                                    onClick={toggleMic}
                                 >
                                     {isMicOn ? <Mic /> : <MicOff />}
                                 </Button>
                                 <Button
-                                    variant={iscameraOn ? "default" : "destructive"}
+                                    variant={isCameraOn ? "default" : "destructive"}
                                     size={"sm"} className="cursor-pointer"
-                                    onClick={() => setIscamerOn(!iscameraOn)}
+                                    onClick={toggleCamera}
                                 >
-                                    {iscameraOn ? <Video /> : <VideoOff />}
-                                </Button>
-                                <Button
-                                    variant={"outline"}
-                                    className="cursor-pointer"
-                                >
-                                    <Share2 />Share screen
+                                    {isCameraOn ? <Video /> : <VideoOff />}
                                 </Button>
                             </div>
                         </div>

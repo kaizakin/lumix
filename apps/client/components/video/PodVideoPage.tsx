@@ -4,10 +4,23 @@ import { usePodSocket } from "@/components/providers/PodSocketProvider";
 import { useSession } from "next-auth/react"
 import { useEffect, useRef, useState } from "react"
 import { VideoTile } from "./VideoTile";
+import { useMediaStore } from "@/store/useMediaStore";
+import { MicOff } from "lucide-react";
+
+function resolveSfuSignalUrl(): string {
+    const configured = process.env.NEXT_PUBLIC_SFU_WS_URL;
+    if (configured) return configured;
+    if (typeof window === "undefined") return "ws://localhost:7000/ws";
+    const host = window.location.hostname;
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    return `${protocol}://${host}:7000/ws`;
+}
 
 export const PodVideoPage = () => {
     const { data: session } = useSession()
     const { podId } = usePodSocket();
+    const isCameraOn = useMediaStore((s) => s.isCameraOn);
+    const isMicOn = useMediaStore((s) => s.isMicOn);
 
     const [localStream, setLocalStream] = useState<MediaStream | null>(null);
     const [remoteStreams, setRemoteStreams] = useState<MediaStream[]>([]);
@@ -45,7 +58,9 @@ export const PodVideoPage = () => {
             }
 
             console.log("[PodVideoPage] Initializing Ion Client...");
-            const signal = new IonSFUJSONRPCSignal("ws://localhost:7000/ws");
+            const sfuUrl = resolveSfuSignalUrl();
+            console.log(`[PodVideoPage] SFU signal URL: ${sfuUrl}`);
+            const signal = new IonSFUJSONRPCSignal(sfuUrl);
             const client = new Client(signal);
             clientRef.current = client;
 
@@ -101,7 +116,7 @@ export const PodVideoPage = () => {
                     resolution: "vga",
                     audio: true,
                     video: true,
-                    codec: "vp8"
+                    codec: "vp8",
                 });
 
                 if (!mounted) {
@@ -110,8 +125,14 @@ export const PodVideoPage = () => {
                     return;
                 }
 
-                setLocalStream(stream);
-                localStreamRef.current = stream;
+                setLocalStream(stream as MediaStream);
+                localStreamRef.current = stream as MediaStream;
+                stream.getAudioTracks().forEach((track: MediaStreamTrack) => {
+                    track.enabled = isMicOn;
+                });
+                stream.getVideoTracks().forEach((track: MediaStreamTrack) => {
+                    track.enabled = isCameraOn;
+                });
 
                 // IMPORTANT: Check if client is still OPEN before publishing
                 // But Ion SDK client doesn't expose readyState easily. 
@@ -144,6 +165,22 @@ export const PodVideoPage = () => {
 
     }, [podId, session]);
 
+    useEffect(() => {
+        const stream = localStreamRef.current;
+        if (!stream) return;
+        stream.getAudioTracks().forEach((track) => {
+            track.enabled = isMicOn;
+        });
+    }, [isMicOn]);
+
+    useEffect(() => {
+        const stream = localStreamRef.current;
+        if (!stream) return;
+        stream.getVideoTracks().forEach((track) => {
+            track.enabled = isCameraOn;
+        });
+    }, [isCameraOn]);
+
     // calculate grid columns based on total participants
     const totalParticipants = (localStream ? 1 : 0) + remoteStreams.length;
 
@@ -161,11 +198,34 @@ export const PodVideoPage = () => {
             <div className={`grid gap-4 w-full h-full content-center ${getGridClass(totalParticipants)}`}>
 
                 {localStream && (
-                    <VideoTile
-                        stream={localStream}
-                        isLocal={true}
-                        className={totalParticipants === 1 ? "max-h-[80vh] aspect-video mx-auto" : ""}
-                    />
+                    isCameraOn ? (
+                        <VideoTile
+                            stream={localStream}
+                            isLocal={true}
+                            className={totalParticipants === 1 ? "max-h-[80vh] aspect-video mx-auto" : ""}
+                        />
+                    ) : (
+                        <div
+                            className={`relative overflow-hidden rounded-xl bg-zinc-900 border border-zinc-700 shadow-md flex items-center justify-center ${
+                                totalParticipants === 1
+                                    ? "max-h-[80vh] aspect-video mx-auto w-full p-8"
+                                    : "w-full h-full min-h-[260px] aspect-video p-6"
+                            }`}
+                        >
+                            <div className="flex flex-col items-center gap-3 text-zinc-200">
+                                <p className="text-base">Your video is off</p>
+                                {!isMicOn && (
+                                    <p className="text-sm text-zinc-400 flex items-center gap-1.5">
+                                        <MicOff className="h-4 w-4" />
+                                        Microphone off
+                                    </p>
+                                )}
+                            </div>
+                            <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded text-xs text-white">
+                                You
+                            </div>
+                        </div>
+                    )
                 )}
 
                 {remoteStreams.map(stream => (
