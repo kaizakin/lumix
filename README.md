@@ -1,11 +1,13 @@
-# Lumix
+<p align="center">
+  <b style="color: red;">Lumix</b>
+</p>
 
 [![wakatime](https://wakatime.com/badge/github/kaizakin/lumix.svg)](https://wakatime.com/badge/github/kaizakin/lumix)
 
-Lumix is a full-stack, real-time collaboration platform where teams work inside shared "Pods".  
-Each pod combines synchronous chat, collaborative writing, lightweight video rooms, and shared file space in one workspace.
+Lumix is a full-stack collaboration platform built as a production-style monorepo. The product model is simple: teams work inside shared Pods that combine chat, collaborative editing, file sharing, and video.
 
-This repository is a production-style monorepo with clear separation of concerns across frontend, real-time backend, and shared packages.
+This repository is interesting from an engineering standpoint because it treats real-time collaboration, data consistency, and deployment ergonomics as first-class concerns.
+
 
 ## About This Project
 
@@ -28,33 +30,61 @@ This repository is a production-style monorepo with clear separation of concerns
 - File sharing: upload/download within each pod.
 - Personal dashboard: pod stats and workspace overview.
 
+
 ## Architecture
 
 ```text
-                        +------------------------------+
-                        |        Next.js Client        |
-                        |  app routes + server actions |
-                        +---------------+--------------+
+                              +------------------------------+
+                              |         Browser Client       |
+                              |         (Next.js App)        |
+                              +---------------+--------------+
+                                              |
+                         HTTP (App Routes / API Routes)
+                         Socket.IO (Realtime Channel)
+                                              |
+                    +-------------------------v-------------------------+
+                    |                  Client Service                   |
+                    |                    apps/client                    |
+                    |  - NextAuth authentication                        |
+                    |  - Prisma access via @repo/db                     |
+                    |  - API routes + server actions                    |
+                    +-------------------+-------------------------------+
                                         |
-                     HTTP (API routes)  |  Socket.IO (/chat)
                                         |
-                +-----------------------+----------------------+
-                |                                              |
-    +-----------v-----------+                      +-----------v-----------+
-    |   Prisma + Postgres   |                      |  Chat Server (Node)   |
-    |  users/pods/messages  |                      |  Socket.IO + Redis    |
-    +-----------+-----------+                      +-----------+-----------+
-                |                                              |
-                |                                              |
-                |                                  +-----------v-----------+
-                |                                  |        Redis          |
-                |                                  | cache + fanout adapter|
-                |                                  +-----------------------+
-                |
-    +-----------v-----------+
-    |   Supabase Storage    |
-    |  pod file blobs       |
-    +-----------------------+
+                            +-----------v-----------+
+                            |       Postgres        |
+                            |   System of Record    |
+                            | users / pods / msgs   |
+                            +-----------------------+
+
+
+                    Realtime + Collaboration Layer
+                                        |
+                    +-------------------v-------------------+
+                    |              Socket Service           |
+                    |            apps/chat-server           |
+                    |  - Socket.IO server                   |
+                    |  - Redis Streams adapter              |
+                    |  - Yjs update relay                   |
+                    |  - Chat history orchestration         |
+                    +-------------------+-------------------+
+                                        |
+                            +-----------v-----------+
+                            |         Redis         |
+                            | realtime coordination |
+                            |   pub/sub + caching   |
+                            +-----------------------+
+
+
+                              Auxiliary Infrastructure
+                                        |
+             +--------------------------+---------------------------+
+             |                                                      |
+   +---------v----------+                               +-----------v-----------+
+   |      Ion SFU       |                               |    Supabase Storage  |
+   | video signaling    |                               |   object/file blobs  |
+   | media forwarding   |                               |   attachments/files  |
+   +--------------------+                               +----------------------+
 ```
 
 ## Monorepo Structure
@@ -72,68 +102,124 @@ This repository is a production-style monorepo with clear separation of concerns
 └── turbo.json         # Turborepo task graph
 ```
 
-## Deep Technical Highlights
+## Technical POV
 
-### 1. Real-time messaging pipeline
+The core design choice is to keep domain ownership explicit:
 
-- Client emits `send_message` through a pod-scoped socket connection.
-- Server persists to Postgres (`ChatMessage`) and updates Redis cache.
-- New message is broadcast to the pod room via Socket.IO.
-- Client applies optimistic updates and reconciles with server responses.
+- `apps/client` owns product UX, auth flows, API routes, and server actions.
+- `apps/chat-server` owns low-latency socket workloads and real-time fanout.
+- `packages/db` owns Prisma schema, migrations, and database access.
+- `packages/types` owns cross-service type contracts.
 
-### 2. Redis-backed message retrieval
+That separation keeps the client focused on product velocity while moving stateful socket concerns into a dedicated runtime.
 
-- `fetch_messages` first checks `chat:<pod>:messages` in Redis.
-- On cache miss, server reads ordered chat history from Postgres and backfills Redis.
-- This reduces repeated DB reads on reconnect/load.
+## Data And Consistency Model
 
-### 3. Collaborative editor sync (Yjs)
+Prisma models capture auth, workspace, and collaboration domains:
 
-- Editor local state is a Yjs document.
-- Updates are emitted as binary payloads through `yjs-update` socket events.
-- Server applies updates and relays to peers in the same editor room.
+- Auth: `User`, `Account`, `Session`, `VerificationToken`
+- Workspace: `Pod`, `Invite`, `PodFile`
+- Realtime content: `ChatGroup`, `ChatMessage`
+- Collaborative state: `EditorDocument`, `CanvasDocument`
 
-### 4. Transactional domain modeling
+Operationally relevant decisions:
 
-Pod creation uses a Prisma transaction to guarantee consistency:
+- Pod creation is handled transactionally to avoid partial workspace state.
+- Chat messages are durable in Postgres and replayable on reconnect.
+- Editor/canvas state is persisted by pod, enabling warm restoration.
 
-1. create `Pod`
-2. connect creator as a member
-3. create matching `ChatGroup`
+## Realtime Design
 
-This avoids partially-created workspace state.
+`apps/chat-server` is purpose-built for socket workloads:
 
-### 5. File handling strategy
+- Socket.IO handles room topology and event routing.
+- Redis Streams adapter enables distributed fanout semantics.
+- Server falls back to Postgres on cache miss, then rehydrates cache.
+- Yjs payloads are relayed as binary updates to keep collaboration responsive.
 
-- Binary files are stored in Supabase object storage.
-- Relational metadata (`PodFile`) stays in Postgres for queryability.
-- Downloads are issued through signed URLs (short-lived access).
+Result: low-latency collaboration without forcing the web app runtime to carry socket state complexity.
 
-## Data Model (Prisma)
+## Monorepo And Build System
 
-Core entities:
+The repo uses `pnpm` workspaces + Turborepo:
 
-- `User`, `Account`, `Session`, `VerificationToken` (NextAuth)
-- `Pod` (owner + members relation)
-- `ChatGroup` (1:1 with pod)
-- `ChatMessage`
-- `Invite`
-- `PodFile`
+- Shared packages (`@repo/db`, `@repo/types`) are consumed by both apps.
+- Build ordering ensures Prisma client generation and DB package build happen before app builds.
+- TypeScript and lint config are centralized in reusable workspace packages.
 
-## Engineering Decisions
+This setup minimizes duplication while keeping boundaries explicit.
 
-- Shared packages (`@repo/db`, `@repo/types`) keep contracts consistent across apps.
-- Prisma is wrapped once in `packages/db` and consumed from both frontend server code and chat server.
-- Next.js transpiles `@repo/db` explicitly to avoid monorepo runtime boundary issues.
-- Zustand handles fast local UI state (tab/panel switching), while React Query manages async server state.
+## Containerization Strategy
 
-## Tech Stack
+### `apps/client/Dockerfile`
 
-- Frontend: Next.js 16, React 19, Tailwind CSS v4, Radix UI
-- Auth: NextAuth v5 + Prisma Adapter + OAuth (GitHub, Google)
-- Realtime: Socket.IO + Redis Streams adapter
-- Collaboration: Milkdown + Yjs
-- Video: Ion SDK JS (SFU client)
-- Database: Postgres + Prisma 7
-- File Storage: Supabase Storage
-- Tooling: pnpm workspaces + Turborepo + TypeScript
+- Multi-stage build on `node:20-alpine`.
+- Installs workspace dependencies once via `pnpm`.
+- Builds `@repo/db` first, then builds Next.js app.
+- Runtime image uses non-root `nextjs` user.
+- Ships Next.js standalone output for smaller runtime footprint.
+
+### `apps/chat-server/Dockerfile`
+
+- Multi-stage build for workspace-aware dependency install + TypeScript compile.
+- Builds shared `@repo/db` package before chat-server build.
+- Runtime image runs as non-root `appuser`.
+- Starts compiled server from `dist/index.js`.
+
+### `PrismaMigration.Dockerfile`
+
+- Minimal purpose-specific image for migration execution only.
+- Copies Prisma schema + `prisma.config.ts`.
+- Installs `prisma` and `dotenv` so config loading is deterministic.
+- Runs `prisma migrate deploy` as the container entry command.
+
+## Compose Topology (`docker-compose.yaml`)
+
+Defined services:
+
+- `postgres` (`postgres:15-alpine`) with persistent volume.
+- `redis` (`redis:7-alpine`) for realtime/cache workloads.
+- `migrate` one-shot migration service.
+- `chat-server` (depends on `postgres`, `redis`, `migrate`).
+- `client` (depends on `postgres`, `chat-server`, `migrate`, `sfu`).
+- `sfu` (`pionwebrtc/ion-sfu`) for video transport layer.
+
+Important runtime detail:
+
+- Migration uses `DIRECT_URL` in Prisma config.
+- App services use `DATABASE_URL` for regular query traffic.
+
+## Local Runbook
+
+### Prerequisites
+
+- Docker + Docker Compose
+- `.env` values for auth and external service keys
+
+### Boot sequence
+
+```bash
+docker compose build
+docker compose up -d
+```
+
+### Run migrations explicitly
+
+```bash
+docker compose build --no-cache migrate
+docker compose run --rm migrate
+```
+
+### Stop stack
+
+```bash
+docker compose down
+```
+
+## Why This Repo Signals Senior Engineering
+
+- Clear service boundaries between product runtime and realtime runtime.
+- Pragmatic consistency guarantees with transactional domain operations.
+- Purpose-built migration container instead of coupling schema rollout to app boot.
+- Non-root runtime containers and multi-stage builds across services.
+- Monorepo sharing done with disciplined package boundaries, not ad-hoc imports.
