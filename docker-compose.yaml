@@ -30,11 +30,13 @@ services:
       NODE_ENV: production
       DATABASE_URL: postgresql://lumix:lumix_password@postgres:5432/lumix
       REDIS_URL: redis://lumix-redis:6379
+      ION_ENDPOINT: ${ION_ENDPOINT}
     ports:
       - "8080:8080"
     depends_on:
       - postgres
       - redis
+      - migrate
     networks:
       - lumix-network
 
@@ -49,12 +51,41 @@ services:
       AUTH_TRUST_HOST: "true"
       AUTH_URL: http://localhost:3000
       NEXTAUTH_URL: http://localhost:3000
-      AUTH_SECRET: dev-auth-secret-change-me
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_GOOGLE_ID: ${AUTH_GOOGLE_ID}
+      AUTH_GOOGLE_SECRET: ${AUTH_GOOGLE_SECRET}
+      AUTH_GITHUB_ID: ${AUTH_GITHUB_ID}
+      AUTH_GITHUB_SECRET: ${AUTH_GITHUB_SECRET}
+      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      NEXT_PUBLIC_TENOR_API_KEY: ${NEXT_PUBLIC_TENOR_API_KEY}
     ports:
       - "3000:3000"
     depends_on:
       - postgres
       - chat-server
+      - migrate
+      - sfu
+    networks:
+      - lumix-network
+
+  sfu:
+    image: pionwebrtc/ion-sfu:latest-jsonrpc
+    ports:
+      - "5000-5200:5000-5200/udp"
+      - "7000:7000"
+  
+  migrate:
+    build:
+      context: .
+      dockerfile: PrismaMigration.Dockerfile
+    container_name: prisma-migrate-container
+    environment:
+      - DIRECT_URL=postgresql://lumix:lumix_password@postgres:5432/lumix
+    depends_on:
+      - postgres
     networks:
       - lumix-network
 

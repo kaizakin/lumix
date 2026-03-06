@@ -5,10 +5,19 @@ import { authConfig } from "./auth.config"
 import GitHub from "next-auth/providers/github"
 import Google from "next-auth/providers/google"
 
+const authUrl = process.env.AUTH_URL ?? process.env.NEXTAUTH_URL;
+const isLocalAuthUrl = authUrl
+    ? /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(authUrl)
+    : false;
+const trustHost =
+    process.env.AUTH_TRUST_HOST === "true" ||
+    process.env.NODE_ENV !== "production" ||
+    isLocalAuthUrl;
+
 const nextAuth = NextAuth({
     adapter: PrismaAdapter(prisma),
     session: { strategy: "jwt" },
-    trustHost: process.env.AUTH_TRUST_HOST === "true",
+    trustHost,
     ...authConfig,
     callbacks: {
         ...authConfig.callbacks,

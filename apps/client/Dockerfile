@@ -32,9 +32,11 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # copy built assets
-COPY --from=builder /app/apps/client/public ./apps/client/public
-COPY --from=builder /app/apps/client/.next/standalone ./
-COPY --from=builder /app/apps/client/.next/static ./apps/client/.next/static
+# set the user and group to nextjs and nodejs for all copied files to avoid EACCESS errors
+COPY --chown=nextjs:nodejs --from=builder /app/apps/client/public ./apps/client/public
+# standalone preserves the projects structure so /apps/client exists
+COPY --chown=nextjs:nodejs --from=builder /app/apps/client/.next/standalone ./
+COPY --chown=nextjs:nodejs --from=builder /app/apps/client/.next/static ./apps/client/.next/static
 
 # tell container to start application as this user
 USER nextjs
@@ -45,4 +47,5 @@ ENV PORT=3000
 # this makes is accessible from anywhere
 ENV HOSTNAME="0.0.0.0" 
 
+# this is the entrypoint for the nextjs server
 CMD ["node", "apps/client/server.js"]

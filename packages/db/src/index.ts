@@ -4,13 +4,19 @@ import { PrismaPg } from '@prisma/adapter-pg'
 import 'dotenv/config'
 
 const createPrismaClient = () => {
+  const databaseUrl = process.env.DATABASE_URL
+  const useSsl = (() => {
+    if (!databaseUrl) return false
+    const sslMode = new URL(databaseUrl).searchParams.get('sslmode')?.toLowerCase()
+    if (!sslMode) return false
+    return !['disable', 'allow', 'prefer'].includes(sslMode)
+  })()
+
   // pool using the POOLED URL (DATABASE_URL)
   const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: databaseUrl,
     max: 2, //pool size for serverless 
-    ssl: {
-      rejectUnauthorized: false // This ignores the self-signed error
-    }
+    ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {})
   })
 
   const adapter = new PrismaPg(pool)
