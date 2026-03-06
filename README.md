@@ -1,6 +1,4 @@
-<p align="center">
-  <b style="color: red;">Lumix</b>
-</p>
+# Lumix
 
 [![wakatime](https://wakatime.com/badge/github/kaizakin/lumix.svg)](https://wakatime.com/badge/github/kaizakin/lumix)
 
